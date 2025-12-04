@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  team1Player1Matches Match[] @relation("Team1Player1")
+  team1Player2Matches Match[] @relation("Team1Player2")
+  team2Player1Matches Match[] @relation("Team2Player1")
+  team2Player2Matches Match[] @relation("Team2Player2")
+  refereeMatches       Match[] @relation("Referee")
+  goals                Goal[]
+
+  @@map("players")
+}
+
+model Match {
+  id        String   @id @default(cuid())
+  type      String   // "officiel" ou "entraînement"
+  status    String   // "en cours", "terminé", "annulé"
+  startDate DateTime @default(now())
+  endDate   DateTime?
+
+  // Scores
+  team1Score Int @default(0)
+  team2Score Int @default(0)
+
+  // Relations avec les joueurs
+  team1Player1Id String
+  team1Player1   Player @relation("Team1Player1", fields: [team1Player1Id], references: [id])
+  team1Player2Id String
+  team1Player2   Player @relation("Team1Player2", fields: [team1Player2Id], references: [id])
+
+  team2Player1Id String
+  team2Player1   Player @relation("Team2Player1", fields: [team2Player1Id], references: [id])
+  team2Player2Id String
+  team2Player2   Player @relation("Team2Player2", fields: [team2Player2Id], references: [id])
+
+  // Arbitre et pari (pour matchs officiels)
+  refereeId String?
+  referee   Player? @relation("Referee", fields: [refereeId], references: [id])
+  bet       String? // "team1", "team2", ou null si pas de pari
+
+  // Buts
+  goals Goal[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("matches")
+}
+
+model Goal {
+  id        String   @id @default(cuid())
+  type      String   // "normal", "demi", "gardien", "gamelle", "pissette"
+  points    Int
+  team      String   // "team1" ou "team2"
+  timestamp DateTime @default(now())
+
+  // Relations
+  matchId   String
+  match     Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  playerId  String
+  player    Player @relation(fields: [playerId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("goals")
+}
+

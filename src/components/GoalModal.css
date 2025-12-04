@@ -1,0 +1,30 @@
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.goal-points-hint {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+.custom-points-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.custom-points-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+

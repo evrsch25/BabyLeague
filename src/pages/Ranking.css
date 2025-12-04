@@ -1,0 +1,126 @@
+.ranking-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 16px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  border-color: #3498db;
+}
+
+.tab-btn.active {
+  background-color: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.ranking-table {
+  width: 100%;
+}
+
+.ranking-table th {
+  text-align: left;
+}
+
+.ranking-table td {
+  vertical-align: middle;
+}
+
+.rank-cell {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.rank-icon {
+  display: inline-block;
+  min-width: 40px;
+}
+
+.player-link {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.player-link:hover {
+  text-decoration: underline;
+}
+
+.top-player {
+  background-color: #fff9e6;
+}
+
+.top-player td {
+  font-weight: 600;
+}
+
+.victories {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.defeats {
+  color: #e74c3c;
+}
+
+.points {
+  color: #3498db;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.ratio {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.ranking-info {
+  margin-top: 24px;
+}
+
+.ranking-info h3 {
+  margin-bottom: 12px;
+  color: #2c3e50;
+}
+
+.ranking-info ul {
+  list-style: none;
+  padding: 0;
+}
+
+.ranking-info li {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.ranking-info li:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .ranking-tabs {
+    flex-direction: column;
+  }
+  
+  .ranking-table {
+    font-size: 14px;
+  }
+  
+  .ranking-table th,
+  .ranking-table td {
+    padding: 8px;
+  }
+}
+
