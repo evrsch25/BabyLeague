@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPlayerById, getMatches, calculatePlayerStats } from '../services/api';
 import './Profile.css';
@@ -10,11 +10,7 @@ const Profile = () => {
   const [recentMatches, setRecentMatches] = useState([]);
   const [partners, setPartners] = useState([]);
 
-  useEffect(() => {
-    loadProfile();
-  }, [id]);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       const playerData = await getPlayerById(id);
       if (!playerData) return;
@@ -90,7 +86,11 @@ const Profile = () => {
     } catch (error) {
       console.error('Erreur lors du chargement du profil:', error);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   if (!player) {
     return <div className="profile">Chargement...</div>;

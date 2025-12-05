@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getPlayers, calculatePlayerStats } from '../services/api';
 import './Ranking.css';
@@ -7,11 +7,7 @@ const Ranking = () => {
   const [players, setPlayers] = useState([]);
   const [rankingType, setRankingType] = useState('officiel'); // officiel, entraînement
 
-  useEffect(() => {
-    loadRanking();
-  }, [rankingType]);
-
-  const loadRanking = async () => {
+  const loadRanking = useCallback(async () => {
     try {
       const allPlayers = await getPlayers();
       const playersWithStats = await Promise.all(
@@ -40,7 +36,11 @@ const Ranking = () => {
     } catch (error) {
       console.error('Erreur lors du chargement du classement:', error);
     }
-  };
+  }, [rankingType]);
+
+  useEffect(() => {
+    loadRanking();
+  }, [loadRanking]);
 
   const getRankIcon = (index) => {
     if (index === 0) return '🥇';

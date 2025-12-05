@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getMatches } from '../services/api';
 import './History.css';
 
@@ -6,11 +6,7 @@ const History = () => {
   const [matches, setMatches] = useState([]);
   const [filter, setFilter] = useState('all'); // all, officiel, entraînement
 
-  useEffect(() => {
-    loadMatches();
-  }, [filter]);
-
-  const loadMatches = async () => {
+  const loadMatches = useCallback(async () => {
     try {
       let allMatches = await getMatches();
     
@@ -25,7 +21,11 @@ const History = () => {
     } catch (error) {
       console.error('Erreur lors du chargement des matchs:', error);
     }
-  };
+  }, [filter]);
+
+  useEffect(() => {
+    loadMatches();
+  }, [loadMatches]);
 
   return (
     <div className="history">
@@ -60,7 +60,6 @@ const History = () => {
         ) : (
           matches.map(match => {
             const winner = match.team1.score > match.team2.score ? match.team1 : match.team2;
-            const loser = match.team1.score > match.team2.score ? match.team2 : match.team1;
             
             return (
               <div key={match.id} className="card match-card">

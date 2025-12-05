@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getPlayers, savePlayer, getCurrentUser, setCurrentUser } from '../services/api';
+import { getPlayers, savePlayer, setCurrentUser } from '../services/api';
 import './Login.css';
 
 const Login = ({ onLogin }) => {

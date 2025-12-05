@@ -11,10 +11,8 @@ export const sendDiscordNotification = async (match) => {
   }
 
   const winner = match.team1.score > match.team2.score ? match.team1 : match.team2;
-  const loser = match.team1.score > match.team2.score ? match.team2 : match.team1;
   
   const winnerNames = winner.players.map(p => p.name).join(' et ');
-  const loserNames = loser.players.map(p => p.name).join(' et ');
   
   const message = {
     content: `🏁 **Match terminé** : Équipe rouge (${match.team1.score}) vs Équipe bleue (${match.team2.score})\n\nVictoire de **${winnerNames}** 🔥\nType : ${match.type === 'officiel' ? 'Officiel' : 'Entraînement'}`,

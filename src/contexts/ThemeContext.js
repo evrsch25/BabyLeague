@@ -26,13 +26,6 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [theme]);
 
-  // Initialiser le thème immédiatement
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', theme);
-    }
-  }, []);
-
   const toggleTheme = () => {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
   };
