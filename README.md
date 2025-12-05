@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏓 BabyLeague
 
 Application de gestion de matchs de babyfoot
@@ -63,3 +64,6 @@ PORT=3001
 - ✅ Classements et statistiques
 - ✅ Historique des matchs
 - ✅ Mode sombre/clair
+=======
+# BabyLeague
+>>>>>>> 8fdeea5009109d05c832bc445951f276589733b8
