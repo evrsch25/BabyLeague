@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ThemeProvider } from './contexts/ThemeContext';
 import './App.css';
 import Navigation from './components/Navigation';
-import ApiWarning from './components/ApiWarning';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import MatchLive from './pages/MatchLive';
@@ -77,7 +76,6 @@ function App() {
               </div>
             </>
           )}
-          <ApiWarning />
         </div>
       </Router>
     </ThemeProvider>
