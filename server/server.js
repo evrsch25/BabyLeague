@@ -491,7 +491,15 @@ app.get('/api/players/:id/stats', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur API démarré sur le port ${PORT}`);
-  console.log(`📊 Utilisation de Supabase: ${supabaseUrl}`);
-});
+// Pour Vercel : exporter l'app comme handler serverless
+// Pour le développement local : démarrer le serveur
+if (process.env.VERCEL) {
+  // En production sur Vercel, on exporte l'app
+  module.exports = app;
+} else {
+  // En développement local, on démarre le serveur
+  app.listen(PORT, () => {
+    console.log(`🚀 Serveur API démarré sur le port ${PORT}`);
+    console.log(`📊 Utilisation de Supabase: ${supabaseUrl}`);
+  });
+}
