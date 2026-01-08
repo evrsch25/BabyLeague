@@ -18,7 +18,7 @@ export const ThemeProvider = ({ children }) => {
     if (typeof window !== 'undefined') {
       document.documentElement.setAttribute('data-theme', theme);
     }
-  }, []);
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme: () => {} }}>
