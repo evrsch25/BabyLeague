@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMatches, generateBalancedTeams, saveMatch } from '../services/api';
+import AlertModal from '../components/AlertModal';
 import './Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
   const [nextMatch, setNextMatch] = useState(null);
   const [recentMatches, setRecentMatches] = useState([]);
+  const [showAlert, setShowAlert] = useState({ isOpen: false, title: '', message: '', type: 'info' });
 
   useEffect(() => {
     loadData();
@@ -42,7 +44,12 @@ const Home = () => {
     // Formation automatique pour les matchs officiels
     const result = await generateBalancedTeams();
     if (!result) {
-      alert('Il faut au moins 4 joueurs pour créer un match');
+      setShowAlert({
+        isOpen: true,
+        title: 'Joueurs insuffisants',
+        message: 'Il faut au moins 4 joueurs pour créer un match',
+        type: 'warning'
+      });
       return;
     }
 
@@ -61,7 +68,12 @@ const Home = () => {
       const savedMatch = await saveMatch(newMatch);
       navigate(`/match/${savedMatch.id}`);
     } catch (error) {
-      alert('Erreur lors de la création du match: ' + error.message);
+      setShowAlert({
+        isOpen: true,
+        title: 'Erreur',
+        message: 'Erreur lors de la création du match: ' + error.message,
+        type: 'error'
+      });
     }
   };
 
@@ -144,6 +156,14 @@ const Home = () => {
           </ul>
         </div>
       )}
+
+      <AlertModal
+        isOpen={showAlert.isOpen}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        onClose={() => setShowAlert({ ...showAlert, isOpen: false })}
+      />
     </div>
   );
 };

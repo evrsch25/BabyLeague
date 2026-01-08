@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useTheme } from '../contexts/ThemeContext';
 import './Navigation.css';
 
 const Navigation = ({ currentUser, onLogout }) => {
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path) => {

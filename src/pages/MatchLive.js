@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getMatchById, saveMatch, getCurrentUser } from '../services/api';
 import { sendDiscordNotification } from '../services/discord';
 import CookieResult from '../components/CookieResult';
+import AlertModal from '../components/AlertModal';
+import ConfirmModal from '../components/ConfirmModal';
 import './MatchLive.css';
 
 const MatchLive = () => {
@@ -12,6 +14,8 @@ const MatchLive = () => {
   const [showCookieResult, setShowCookieResult] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [pendingBet, setPendingBet] = useState(null); // Pari en attente de validation
+  const [showAlert, setShowAlert] = useState({ isOpen: false, title: '', message: '', type: 'info' });
+  const [showConfirm, setShowConfirm] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
 
   const loadMatch = useCallback(async () => {
     try {
@@ -27,8 +31,13 @@ const MatchLive = () => {
     } catch (error) {
       console.error('Erreur lors du chargement du match:', error);
       // Ne pas rediriger immédiatement, afficher un message d'erreur
-      alert('Erreur lors du chargement du match. Vérifiez que le serveur backend est démarré.');
-      navigate('/');
+      setShowAlert({
+        isOpen: true,
+        title: 'Erreur',
+        message: 'Erreur lors du chargement du match. Vérifiez que le serveur backend est démarré.',
+        type: 'error'
+      });
+      setTimeout(() => navigate('/'), 2000);
     }
   }, [id, navigate]);
 
@@ -54,7 +63,12 @@ const MatchLive = () => {
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du match:', error);
-      alert('Erreur lors de la sauvegarde: ' + error.message);
+      setShowAlert({
+        isOpen: true,
+        title: 'Erreur',
+        message: 'Erreur lors de la sauvegarde: ' + error.message,
+        type: 'error'
+      });
     }
   };
 
@@ -95,8 +109,13 @@ const MatchLive = () => {
     } else {
       // Afficher un message de fin normal
       const winnerNames = winner.players.map(p => p.name).join(' et ');
-      alert(`🏆 Match terminé !\n\nVictoire de ${winnerNames} !\n\nScore final: ${finishedMatch.team1.score} - ${finishedMatch.team2.score}`);
-      navigate('/');
+      setShowAlert({
+        isOpen: true,
+        title: '🏆 Match terminé !',
+        message: `Victoire de ${winnerNames} !\n\nScore final: ${finishedMatch.team1.score} - ${finishedMatch.team2.score}`,
+        type: 'success'
+      });
+      setTimeout(() => navigate('/'), 3000);
     }
   };
 
@@ -110,7 +129,12 @@ const MatchLive = () => {
     
     // Vérifier que l'utilisateur est l'arbitre
     if (match.referee && match.referee.id !== currentUser.id) {
-      alert('Seul l\'arbitre peut parier');
+      setShowAlert({
+        isOpen: true,
+        title: 'Accès refusé',
+        message: 'Seul l\'arbitre peut parier',
+        type: 'error'
+      });
       return;
     }
 
@@ -126,21 +150,38 @@ const MatchLive = () => {
       setPendingBet(savedMatch.bet || null);
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du pari:', error);
-      alert('Erreur lors de la sauvegarde du pari: ' + error.message);
+      setShowAlert({
+        isOpen: true,
+        title: 'Erreur',
+        message: 'Erreur lors de la sauvegarde du pari: ' + error.message,
+        type: 'error'
+      });
     }
   };
 
-  const handleCancelMatch = async () => {
-    if (window.confirm('Êtes-vous sûr de vouloir annuler ce match ?')) {
-      try {
-        const updatedMatch = { ...match, status: 'annulé' };
-        await saveMatch(updatedMatch);
-        navigate('/');
-      } catch (error) {
-        console.error('Erreur lors de l\'annulation:', error);
-        alert('Erreur lors de l\'annulation: ' + error.message);
+  const handleCancelMatch = () => {
+    setShowConfirm({
+      isOpen: true,
+      title: 'Annuler le match',
+      message: 'Êtes-vous sûr de vouloir annuler ce match ?',
+      onConfirm: async () => {
+        try {
+          const updatedMatch = { ...match, status: 'annulé' };
+          await saveMatch(updatedMatch);
+          setShowConfirm({ ...showConfirm, isOpen: false });
+          navigate('/');
+        } catch (error) {
+          console.error('Erreur lors de l\'annulation:', error);
+          setShowConfirm({ ...showConfirm, isOpen: false });
+          setShowAlert({
+            isOpen: true,
+            title: 'Erreur',
+            message: 'Erreur lors de l\'annulation: ' + error.message,
+            type: 'error'
+          });
+        }
       }
-    }
+    });
   };
 
   if (!match) {
@@ -175,7 +216,12 @@ const MatchLive = () => {
       setMatch(savedMatch);
     } catch (error) {
       console.error('Erreur lors du démarrage du match:', error);
-      alert('Erreur lors du démarrage du match: ' + error.message);
+      setShowAlert({
+        isOpen: true,
+        title: 'Erreur',
+        message: 'Erreur lors du démarrage du match: ' + error.message,
+        type: 'error'
+      });
     }
   };
 
@@ -373,6 +419,29 @@ const MatchLive = () => {
       {showCookieResult && match && (
         <CookieResult match={match} onClose={handleCookieResultClose} />
       )}
+
+      <AlertModal
+        isOpen={showAlert.isOpen}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        onClose={() => setShowAlert({ ...showAlert, isOpen: false })}
+      />
+
+      <ConfirmModal
+        isOpen={showConfirm.isOpen}
+        title={showConfirm.title}
+        message={showConfirm.message}
+        confirmText="Confirmer"
+        cancelText="Annuler"
+        type="danger"
+        onConfirm={() => {
+          if (showConfirm.onConfirm) {
+            showConfirm.onConfirm();
+          }
+        }}
+        onCancel={() => setShowConfirm({ ...showConfirm, isOpen: false })}
+      />
     </div>
   );
 };
