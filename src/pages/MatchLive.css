@@ -176,21 +176,27 @@
 .team-card.clickable {
   transition: all 0.2s ease;
   user-select: none;
+  cursor: pointer;
+  position: relative;
 }
 
 .team-card.clickable:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 20px var(--shadow);
+  transform: translateY(-4px) !important;
+  box-shadow: 0 6px 20px var(--shadow) !important;
   border-width: 3px;
 }
 
 .team-card.clickable:active {
-  transform: translateY(-2px);
+  transform: translateY(-2px) !important;
 }
 
 .team-click-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
   font-style: italic;
   text-align: center;
+  margin-top: 8px;
+  opacity: 0.8;
 }
 
 @keyframes pulse {
@@ -330,6 +336,130 @@
   color: var(--danger);
 }
 
+.score-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.score-popup {
+  background: var(--bg-primary);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--border-color);
+  animation: slideUp 0.4s ease-out;
+  position: relative;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.score-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.score-popup-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.score-popup-close {
+  background: var(--bg-secondary);
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  line-height: 1;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.score-popup-close:hover {
+  background-color: var(--danger);
+  color: white;
+  transform: rotate(90deg);
+}
+
+.score-popup-content {
+  text-align: center;
+}
+
+.score-popup-current {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.score-popup-score {
+  font-size: 48px;
+  font-weight: 900;
+  background: var(--gradient-secondary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+  margin: 0 8px;
+}
+
+.score-popup-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.score-popup-buttons .btn {
+  min-width: 120px;
+  padding: 16px 32px;
+  font-size: 24px;
+  font-weight: 700;
+  border-radius: 12px;
+}
+
+.score-popup-buttons .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .goal-item {
     grid-template-columns: 1fr;
@@ -340,6 +470,38 @@
     flex-direction: column;
     gap: 12px;
     align-items: flex-start;
+  }
+
+  .score-popup {
+    padding: 24px;
+    max-width: 90%;
+  }
+
+  .score-popup-title {
+    font-size: 20px;
+  }
+
+  .score-popup-score {
+    font-size: 36px;
+  }
+
+  .score-popup-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .score-popup-buttons .btn {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .teams-display {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .team-card {
+    width: 100%;
   }
 }
 

@@ -16,6 +16,7 @@ const MatchLive = () => {
   const [pendingBet, setPendingBet] = useState(null); // Pari en attente de validation
   const [showAlert, setShowAlert] = useState({ isOpen: false, title: '', message: '', type: 'info' });
   const [showConfirm, setShowConfirm] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
+  const [scorePopupTeam, setScorePopupTeam] = useState(null); // 'team1' ou 'team2' ou null
 
   const loadMatch = useCallback(async () => {
     try {
@@ -53,6 +54,9 @@ const MatchLive = () => {
     const updatedMatch = { ...match };
     updatedMatch[team].score = Math.max(0, updatedMatch[team].score + delta);
 
+    // Fermer le popup immédiatement
+    setScorePopupTeam(null);
+
     try {
       const savedMatch = await saveMatch(updatedMatch);
       setMatch(savedMatch);
@@ -69,6 +73,12 @@ const MatchLive = () => {
         message: 'Erreur lors de la sauvegarde: ' + error.message,
         type: 'error'
       });
+    }
+  };
+
+  const handleTeamCardClick = (team) => {
+    if (match && match.status === 'en cours') {
+      setScorePopupTeam(team);
     }
   };
 
@@ -238,20 +248,32 @@ const MatchLive = () => {
 
       <div className="match-container">
         <div className="teams-display">
-          <div className={`team-card team-red ${match.team1.score >= 10 ? 'winner' : ''}`}>
+          <div 
+            className={`team-card team-red ${match.team1.score >= 10 ? 'winner' : ''} ${isActive ? 'clickable' : ''}`}
+            onClick={() => handleTeamCardClick('team1')}
+          >
             <div className="team-name">Équipe Rouge</div>
             <div className="team-players">
               {match.team1.players.map(p => p.name).join(' / ')}
             </div>
             <div className="score">{match.team1.score}</div>
+            {isActive && (
+              <div className="team-click-hint">Appuyez pour modifier le score</div>
+            )}
           </div>
 
-          <div className={`team-card team-blue ${match.team2.score >= 10 ? 'winner' : ''}`}>
+          <div 
+            className={`team-card team-blue ${match.team2.score >= 10 ? 'winner' : ''} ${isActive ? 'clickable' : ''}`}
+            onClick={() => handleTeamCardClick('team2')}
+          >
             <div className="team-name">Équipe Bleue</div>
             <div className="team-players">
               {match.team2.players.map(p => p.name).join(' / ')}
             </div>
             <div className="score">{match.team2.score}</div>
+            {isActive && (
+              <div className="team-click-hint">Appuyez pour modifier le score</div>
+            )}
           </div>
         </div>
 
@@ -359,43 +381,6 @@ const MatchLive = () => {
                 </div>
               </div>
             )}
-
-            <div className="score-controls">
-              <div className="score-control-group">
-                <button 
-                  onClick={() => handleScoreChange('team1', 1)} 
-                  className="btn btn-success"
-                  style={{ fontSize: '20px', padding: '15px 30px', minWidth: '120px' }}
-                >
-                  +1
-                </button>
-                <button 
-                  onClick={() => handleScoreChange('team1', -1)} 
-                  className="btn btn-danger"
-                  style={{ fontSize: '20px', padding: '15px 30px', minWidth: '120px' }}
-                  disabled={match.team1.score <= 0}
-                >
-                  -1
-                </button>
-              </div>
-              <div className="score-control-group">
-                <button 
-                  onClick={() => handleScoreChange('team2', 1)} 
-                  className="btn btn-success"
-                  style={{ fontSize: '20px', padding: '15px 30px', minWidth: '120px' }}
-                >
-                  +1
-                </button>
-                <button 
-                  onClick={() => handleScoreChange('team2', -1)} 
-                  className="btn btn-danger"
-                  style={{ fontSize: '20px', padding: '15px 30px', minWidth: '120px' }}
-                  disabled={match.team2.score <= 0}
-                >
-                  -1
-                </button>
-              </div>
-            </div>
           </>
         )}
 
@@ -442,6 +427,44 @@ const MatchLive = () => {
         }}
         onCancel={() => setShowConfirm({ ...showConfirm, isOpen: false })}
       />
+
+      {scorePopupTeam && (
+        <div className="score-popup-overlay" onClick={() => setScorePopupTeam(null)}>
+          <div className="score-popup" onClick={(e) => e.stopPropagation()}>
+            <div className="score-popup-header">
+              <h3 className="score-popup-title">
+                {scorePopupTeam === 'team1' ? '🔴 Équipe Rouge' : '🔵 Équipe Bleue'}
+              </h3>
+              <button 
+                className="score-popup-close"
+                onClick={() => setScorePopupTeam(null)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="score-popup-content">
+              <div className="score-popup-current">
+                Score actuel: <span className="score-popup-score">{match[scorePopupTeam].score}</span>
+              </div>
+              <div className="score-popup-buttons">
+                <button
+                  onClick={() => handleScoreChange(scorePopupTeam, 1)}
+                  className="btn btn-success btn-large"
+                >
+                  +1
+                </button>
+                <button
+                  onClick={() => handleScoreChange(scorePopupTeam, -1)}
+                  className="btn btn-danger btn-large"
+                  disabled={match[scorePopupTeam].score <= 0}
+                >
+                  -1
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
