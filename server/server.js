@@ -4,7 +4,7 @@ const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 
 // Initialiser Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -39,15 +39,65 @@ const generateId = () => {
 // Récupérer tous les joueurs
 app.get('/api/players', async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('players')
-      .select('*')
-      .order('createdAt', { ascending: false });
+    console.log('GET /api/players - Requête reçue');
+    console.log('URL Supabase:', supabaseUrl);
+    console.log('Clé Supabase présente:', supabaseKey ? 'Oui' : 'Non');
     
-    if (error) throw error;
+    // D'abord, essayer sans order pour éviter les problèmes de colonne
+    let { data, error } = await supabase
+      .from('players')
+      .select('*');
+    
+    if (error) {
+      console.error('❌ Erreur Supabase GET /api/players:');
+      console.error('Code erreur:', error.code);
+      console.error('Message erreur:', error.message);
+      console.error('Détails:', error.details);
+      console.error('Hint:', error.hint);
+      
+      // Vérifier si c'est une erreur 521 (serveur down) ou HTML (Cloudflare)
+      if (error.message && (error.message.includes('521') || error.message.includes('Web server is down') || error.message.includes('<!DOCTYPE html>'))) {
+        return res.status(503).json({ 
+          error: 'Le projet Supabase est actuellement en pause ou indisponible. Veuillez réactiver votre projet sur https://supabase.com/dashboard',
+          code: 'SUPABASE_PAUSED'
+        });
+      }
+      
+      // Vérifier si c'est un problème de table
+      if (error.message && (error.message.includes('does not exist') || error.message.includes('relation') || error.code === '42P01')) {
+        return res.status(500).json({ 
+          error: 'La table players n\'existe pas dans Supabase. Veuillez exécuter le schéma SQL dans Supabase.',
+          details: error.message
+        });
+      }
+      
+      throw error;
+    }
+    
+    // Si succès, on peut essayer d'ordonner (mais ce n'est pas critique)
+    if (data && data.length > 0) {
+      try {
+        const orderedResult = await supabase
+          .from('players')
+          .select('*')
+          .order('"createdAt"', { ascending: false });
+        if (!orderedResult.error && orderedResult.data) {
+          data = orderedResult.data;
+        }
+      } catch (orderError) {
+        console.warn('Impossible d\'ordonner par createdAt, utilisation des données sans ordre');
+      }
+    }
+    
+    console.log('✅ GET /api/players - Succès,', data?.length || 0, 'joueurs trouvés');
     res.json(data || []);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('❌ Erreur GET /api/players:', error);
+    console.error('Stack:', error.stack);
+    res.status(500).json({ 
+      error: error.message || 'Erreur serveur',
+      code: error.code
+    });
   }
 });
 
@@ -75,38 +125,87 @@ app.get('/api/players/:id', async (req, res) => {
 // Créer ou mettre à jour un joueur
 app.post('/api/players', async (req, res) => {
   try {
+    console.log('Requête POST /api/players reçue:', req.body);
     const { id, name, email } = req.body;
+    
+    // Validation
+    if (!name || !name.trim()) {
+      console.log('Erreur: nom manquant');
+      return res.status(400).json({ error: 'Le nom est requis' });
+    }
+    
+    if (!email || !email.trim()) {
+      console.log('Erreur: email manquant');
+      return res.status(400).json({ error: 'L\'email est requis' });
+    }
     
     if (id) {
       // Mise à jour
+      console.log('Mise à jour du joueur:', id);
       const { data, error } = await supabase
         .from('players')
-        .update({ name, email })
+        .update({ name: name.trim(), email: email.trim().toLowerCase() })
         .eq('id', id)
         .select()
         .single();
       
-      if (error) throw error;
-      res.json(data);
-    } else {
-      // Création
-      const newId = generateId();
-      const { data, error } = await supabase
-        .from('players')
-        .insert({ id: newId, name, email })
-        .select()
-        .single();
-      
       if (error) {
-        if (error.code === '23505') { // Violation de contrainte unique
+        console.error('Erreur Supabase lors de la mise à jour:', error);
+        if (error.code === '23505') {
           return res.status(400).json({ error: 'Cet e-mail est déjà utilisé' });
         }
         throw error;
       }
+      console.log('Joueur mis à jour avec succès:', data);
+      res.json(data);
+    } else {
+      // Création
+      const newId = generateId();
+      console.log('Création d\'un nouveau joueur avec ID:', newId);
+      console.log('Données:', { id: newId, name: name.trim(), email: email.trim().toLowerCase() });
+      
+      const { data, error } = await supabase
+        .from('players')
+        .insert({ 
+          id: newId, 
+          name: name.trim(), 
+          email: email.trim().toLowerCase() 
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Erreur Supabase lors de la création:', error);
+        console.error('Code erreur:', error.code);
+        console.error('Message erreur:', error.message);
+        console.error('Détails erreur:', error.details);
+        
+        // Vérifier si c'est une erreur 521 (serveur down) ou HTML (Cloudflare)
+        if (error.message && (error.message.includes('521') || error.message.includes('Web server is down') || error.message.includes('<!DOCTYPE html>'))) {
+          return res.status(503).json({ 
+            error: 'Le projet Supabase est actuellement en pause ou indisponible. Veuillez réactiver votre projet sur https://supabase.com/dashboard',
+            code: 'SUPABASE_PAUSED'
+          });
+        }
+        
+        if (error.code === '23505') { // Violation de contrainte unique
+          return res.status(400).json({ error: 'Cet e-mail est déjà utilisé' });
+        }
+        if (error.code === '42P01') { // Table n'existe pas
+          return res.status(500).json({ error: 'La table players n\'existe pas dans la base de données' });
+        }
+        throw error;
+      }
+      console.log('Joueur créé avec succès:', data);
       res.json(data);
     }
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Erreur serveur lors de la création/mise à jour du joueur:', error);
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ 
+      error: error.message || 'Erreur serveur',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -162,7 +261,7 @@ app.get('/api/matches', async (req, res) => {
     const { data: matches, error: matchesError } = await supabase
       .from('matches')
       .select('*')
-      .order('createdAt', { ascending: false });
+      .order('"createdAt"', { ascending: false });
     
     if (matchesError) throw matchesError;
     
@@ -256,36 +355,50 @@ app.post('/api/matches', async (req, res) => {
   try {
     const { id, type, status, team1, team2, goals, endDate, referee, bet } = req.body;
     
+    console.log('POST /api/matches - Requête reçue:', { id, type, status, hasTeam1: !!team1, hasTeam2: !!team2 });
+    
     // Vérifier si le match existe
     if (id) {
       const { data: existingMatch } = await supabase
         .from('matches')
-        .select('id')
+        .select('*')
         .eq('id', id)
         .single();
       
       if (existingMatch) {
-        // Mise à jour
+        console.log('Match existant trouvé:', { id: existingMatch.id, type: existingMatch.type, status: existingMatch.status });
+        
+        // Mise à jour - utiliser le type du body ou celui existant
+        const matchType = type || existingMatch.type || 'officiel';
+        const matchStatus = status || existingMatch.status;
+        
+        console.log('Mise à jour du match avec:', { type: matchType, status: matchStatus, team1Score: team1?.score, team2Score: team2?.score });
+        
         const { data: updatedMatch, error: updateError } = await supabase
           .from('matches')
           .update({
-            type,
-            status,
-            team1Score: team1.score,
-            team2Score: team2.score,
-            team1Player1Id: team1.players[0].id,
-            team1Player2Id: team1.players[1].id,
-            team2Player1Id: team2.players[0].id,
-            team2Player2Id: team2.players[1].id,
-            endDate: endDate ? new Date(endDate).toISOString() : null,
-            refereeId: referee?.id || null,
-            bet: bet || null
+            type: matchType,
+            status: matchStatus,
+            team1Score: team1?.score ?? existingMatch.team1Score,
+            team2Score: team2?.score ?? existingMatch.team2Score,
+            team1Player1Id: team1?.players?.[0]?.id || existingMatch.team1Player1Id,
+            team1Player2Id: team1?.players?.[1]?.id || existingMatch.team1Player2Id,
+            team2Player1Id: team2?.players?.[0]?.id || existingMatch.team2Player1Id,
+            team2Player2Id: team2?.players?.[1]?.id || existingMatch.team2Player2Id,
+            endDate: endDate ? new Date(endDate).toISOString() : (matchStatus === 'terminé' ? new Date().toISOString() : existingMatch.endDate),
+            refereeId: referee?.id || existingMatch.refereeId || null,
+            bet: bet !== undefined ? bet : existingMatch.bet
           })
           .eq('id', id)
           .select()
           .single();
         
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Erreur lors de la mise à jour du match:', updateError);
+          throw updateError;
+        }
+        
+        console.log('✅ Match mis à jour avec succès:', { id: updatedMatch.id, type: updatedMatch.type, status: updatedMatch.status });
         
         // Mettre à jour les buts si fournis
         if (goals) {
@@ -437,6 +550,9 @@ app.post('/api/matches/:id/goals', async (req, res) => {
 app.get('/api/players/:id/stats', async (req, res) => {
   try {
     const { matchType } = req.query; // 'all', 'officiel', 'entraînement'
+    const playerId = req.params.id;
+    
+    console.log(`GET /api/players/${playerId}/stats - matchType: ${matchType}`);
     
     // Récupérer tous les matchs terminés
     let query = supabase
@@ -450,43 +566,68 @@ app.get('/api/players/:id/stats', async (req, res) => {
     
     const { data: matches, error: matchesError } = await query;
     
-    if (matchesError) throw matchesError;
+    if (matchesError) {
+      console.error('Erreur lors de la récupération des matchs:', matchesError);
+      throw matchesError;
+    }
+    
+    console.log(`Nombre de matchs terminés trouvés: ${matches?.length || 0}`);
     
     // Filtrer les matchs où le joueur a participé
     const playerMatches = (matches || []).filter(match => {
-      return match.team1Player1Id === req.params.id ||
-             match.team1Player2Id === req.params.id ||
-             match.team2Player1Id === req.params.id ||
-             match.team2Player2Id === req.params.id;
+      return match.team1Player1Id === playerId ||
+             match.team1Player2Id === playerId ||
+             match.team2Player1Id === playerId ||
+             match.team2Player2Id === playerId;
     });
+    
+    console.log(`Nombre de matchs du joueur ${playerId}: ${playerMatches.length}`);
     
     let victories = 0;
     let defeats = 0;
     let points = 0;
     
     playerMatches.forEach(match => {
-      const isInTeam1 = match.team1Player1Id === req.params.id || match.team1Player2Id === req.params.id;
-      const winner = match.team1Score > match.team2Score ? 'team1' : 'team2';
+      const isInTeam1 = match.team1Player1Id === playerId || match.team1Player2Id === playerId;
+      const team1Wins = match.team1Score > match.team2Score;
+      const team2Wins = match.team2Score > match.team1Score;
       
-      if ((isInTeam1 && winner === 'team1') || (!isInTeam1 && winner === 'team2')) {
+      console.log(`Match ${match.id}: type=${match.type}, score=${match.team1Score}-${match.team2Score}, joueur dans team1=${isInTeam1}`);
+      
+      // Le joueur gagne si son équipe a le score le plus élevé
+      if ((isInTeam1 && team1Wins) || (!isInTeam1 && team2Wins)) {
         victories++;
-        if (match.type === 'officiel') points += 3;
-      } else {
+        // Points seulement pour les matchs officiels
+        if (match.type === 'officiel') {
+          points += 3;
+          console.log(`  -> Victoire! +3 points (total: ${points})`);
+        } else {
+          console.log(`  -> Victoire mais match non-officiel, pas de points`);
+        }
+      } else if (team1Wins || team2Wins) {
+        // Il y a un gagnant, donc le joueur a perdu
         defeats++;
+        console.log(`  -> Défaite`);
       }
+      // Note: En cas d'égalité (score identique), on ne compte ni victoire ni défaite
     });
     
     const totalMatches = victories + defeats;
     const ratio = totalMatches > 0 ? (victories / totalMatches * 100).toFixed(1) : 0;
     
-    res.json({
+    const stats = {
       matches: totalMatches,
       victories,
       defeats,
       points,
       ratio: parseFloat(ratio)
-    });
+    };
+    
+    console.log(`Stats finales pour joueur ${playerId}:`, stats);
+    
+    res.json(stats);
   } catch (error) {
+    console.error('Erreur lors du calcul des stats:', error);
     res.status(500).json({ error: error.message });
   }
 });

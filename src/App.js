@@ -6,7 +6,6 @@ import Navigation from './components/Navigation';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import MatchLive from './pages/MatchLive';
-import History from './pages/History';
 import Ranking from './pages/Ranking';
 import Profile from './pages/Profile';
 import { getCurrentUser, setCurrentUser } from './services/api';
@@ -38,7 +37,7 @@ function App() {
           {loading ? (
             <div className="main-content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏓</div>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚽</div>
                 <div>Chargement...</div>
               </div>
             </div>
@@ -58,10 +57,6 @@ function App() {
                   <Route 
                     path="/match/:id" 
                     element={currentUser ? <MatchLive /> : <Navigate to="/login" />} 
-                  />
-                  <Route 
-                    path="/history" 
-                    element={currentUser ? <History /> : <Navigate to="/login" />} 
                   />
                   <Route 
                     path="/ranking" 

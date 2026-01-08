@@ -55,6 +55,36 @@
   border-color: var(--border-color);
 }
 
+.score-controls {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.score-control-group {
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .score-controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .score-control-group {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .score-control-group button {
+    width: 100%;
+  }
+}
+
 .referee-bet-selection {
   display: flex;
   flex-direction: column;

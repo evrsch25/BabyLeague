@@ -56,7 +56,7 @@ const Login = ({ onLogin }) => {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <div className="login-icon">🏓</div>
+          <div className="login-icon">⚽</div>
           <h1 className="login-title">BabyLeague</h1>
           <p className="login-subtitle">
             {isSignup ? 'Créez votre compte' : 'Connectez-vous à votre compte'}

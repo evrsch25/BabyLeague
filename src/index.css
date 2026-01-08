@@ -4,55 +4,23 @@
   box-sizing: border-box;
 }
 
-:root {
-  /* Light Theme Colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #e9ecef;
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
-  --text-tertiary: #adb5bd;
-  --border-color: #dee2e6;
-  --shadow: rgba(0, 0, 0, 0.1);
-  --shadow-lg: rgba(0, 0, 0, 0.15);
-  
-  /* Brand Colors */
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --secondary: #8b5cf6;
-  --success: #10b981;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-  --info: #3b82f6;
-  
-  /* Team Colors */
-  --team-red: #ef4444;
-  --team-blue: #3b82f6;
-  --team-red-light: #fee2e2;
-  --team-blue-light: #dbeafe;
-  
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
+:root,
 [data-theme="dark"] {
-  /* Dark Theme Colors */
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #2d2d2d;
-  --bg-tertiary: #3d3d3d;
+  /* Dark Theme Colors - Mode sombre par défaut */
+  --bg-primary: #091C3E;
+  --bg-secondary: #0a1f42;
+  --bg-tertiary: #0d2548;
   --text-primary: #ffffff;
   --text-secondary: #b0b0b0;
   --text-tertiary: #808080;
-  --border-color: #404040;
-  --shadow: rgba(0, 0, 0, 0.3);
-  --shadow-lg: rgba(0, 0, 0, 0.5);
+  --border-color: #1a3a5c;
+  --shadow: rgba(0, 0, 0, 0.4);
+  --shadow-lg: rgba(0, 0, 0, 0.6);
   
-  /* Brand Colors (lighter in dark mode) */
-  --primary: #818cf8;
-  --primary-hover: #6366f1;
-  --secondary: #a78bfa;
+  /* Brand Colors - Couleur principale #091C3E et secondaire #CDFB0A */
+  --primary: #091C3E;
+  --primary-hover: #0a2542;
+  --secondary: #CDFB0A;
   --success: #34d399;
   --danger: #f87171;
   --warning: #fbbf24;
@@ -63,6 +31,11 @@
   --team-blue: #60a5fa;
   --team-red-light: #7f1d1d;
   --team-blue-light: #1e3a8a;
+  
+  /* Gradients avec nouvelles couleurs */
+  --gradient-primary: linear-gradient(135deg, #091C3E 0%, #0a2542 100%);
+  --gradient-secondary: linear-gradient(135deg, #CDFB0A 0%, #a8d508 100%);
+  --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
 body {
@@ -74,6 +47,15 @@ body {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Forcer le mode sombre par défaut */
+html {
+  background-color: var(--bg-secondary);
+}
+
+html[data-theme] {
+  background-color: var(--bg-secondary);
 }
 
 code {

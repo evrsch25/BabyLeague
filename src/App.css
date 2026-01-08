@@ -63,12 +63,12 @@
 
 .nav-links a:hover {
   background-color: var(--bg-secondary);
-  color: var(--primary);
+  color: var(--secondary);
 }
 
 .nav-links a.active {
-  background-color: var(--primary);
-  color: white;
+  background-color: var(--secondary);
+  color: var(--primary);
 }
 
 .nav-actions {
@@ -112,8 +112,9 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--secondary) 0%, #a8d508 100%);
+  color: var(--primary);
+  font-weight: 700;
 }
 
 .btn-primary:hover {
@@ -183,11 +184,7 @@
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 16px;
-  color: var(--text-primary);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--secondary);
 }
 
 /* Forms */
@@ -217,8 +214,8 @@
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px rgba(205, 251, 10, 0.2);
 }
 
 /* Modal */
@@ -338,10 +335,7 @@
 .score {
   font-size: 72px;
   font-weight: 900;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--secondary);
 }
 
 .score-buttons {
@@ -432,10 +426,10 @@
 }
 
 .goal-type-btn.selected {
-  border-color: var(--primary);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  border-color: var(--secondary);
+  background: linear-gradient(135deg, var(--secondary) 0%, #a8d508 100%);
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(205, 251, 10, 0.3);
 }
 
 /* Table */
@@ -457,9 +451,9 @@
 }
 
 .table th {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  color: white;
-  font-weight: 600;
+  background: linear-gradient(135deg, var(--secondary) 0%, #a8d508 100%);
+  color: var(--primary);
+  font-weight: 700;
 }
 
 .table tr:hover {
@@ -538,8 +532,8 @@
 
 .mobile-menu a:hover,
 .mobile-menu a.active {
-  background-color: var(--primary);
-  color: white;
+  background-color: var(--secondary);
+  color: var(--primary);
 }
 
 /* Responsive */

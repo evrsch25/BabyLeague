@@ -2,24 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getMatchById, saveMatch, getCurrentUser } from '../services/api';
 import { sendDiscordNotification } from '../services/discord';
-import GoalModal from '../components/GoalModal';
 import CookieResult from '../components/CookieResult';
 import './MatchLive.css';
-
-const GOAL_TYPES = {
-  normal: { label: 'Normal', points: 1 },
-  demi: { label: 'Demi', customPoints: true },
-  gardien: { label: 'Gardien', multiplier: 2 },
-  gamelle: { label: 'Gamelle', points: -1, isGamelle: true },
-  pissette: { label: 'Pissette', points: -1 }
-};
 
 const MatchLive = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [match, setMatch] = useState(null);
-  const [showGoalModal, setShowGoalModal] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState(null);
   const [showCookieResult, setShowCookieResult] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [pendingBet, setPendingBet] = useState(null); // Pari en attente de validation
@@ -49,51 +38,17 @@ const MatchLive = () => {
     setCurrentUser(user);
   }, [loadMatch]);
 
-  const handleGoalClick = (team) => {
-    setSelectedTeam(team);
-    setShowGoalModal(true);
-  };
+  const handleScoreChange = async (team, delta) => {
+    if (!match || match.status !== 'en cours') return;
 
-  const handleGoalSubmit = async (goalData) => {
-    if (!match) return;
-
-    const { type, playerId, basePoints, customPoints } = goalData;
-    let points = customPoints !== undefined ? customPoints : basePoints;
-
-    // Appliquer le multiplicateur pour le gardien
-    if (type === 'gardien') {
-      points = basePoints * 2;
-    }
-
-    // Mettre à jour le score
     const updatedMatch = { ...match };
-    
-    // Pour la gamelle, on retire des points à l'équipe adverse
-    if (type === 'gamelle') {
-      const opponentTeam = selectedTeam === 'team1' ? 'team2' : 'team1';
-      updatedMatch[opponentTeam].score = updatedMatch[opponentTeam].score + points; // points est déjà -1, peut aller en négatif
-    } else {
-      // Pour les autres types de buts, on ajoute des points à l'équipe qui marque
-      updatedMatch[selectedTeam].score = updatedMatch[selectedTeam].score + points; // peut aller en négatif
-    }
-
-    // Ajouter le but à l'historique
-    updatedMatch.goals = updatedMatch.goals || [];
-    updatedMatch.goals.push({
-      id: Date.now().toString(),
-      team: selectedTeam,
-      playerId,
-      type,
-      points,
-      timestamp: new Date().toISOString()
-    });
+    updatedMatch[team].score = Math.max(0, updatedMatch[team].score + delta);
 
     try {
       const savedMatch = await saveMatch(updatedMatch);
       setMatch(savedMatch);
-      setShowGoalModal(false);
 
-      // Vérifier si le match est terminé
+      // Vérifier si le match est terminé (10 points)
       if (savedMatch.team1.score >= 10 || savedMatch.team2.score >= 10) {
         handleMatchEnd(savedMatch);
       }
@@ -104,11 +59,21 @@ const MatchLive = () => {
   };
 
   const handleMatchEnd = async (finishedMatch) => {
+    // S'assurer que le type est bien présent (devrait être 'officiel')
     const updatedMatch = {
       ...finishedMatch,
+      type: finishedMatch.type || 'officiel', // S'assurer que le type est toujours présent
       status: 'terminé',
       endDate: new Date().toISOString()
     };
+
+    console.log('Fin du match - Données sauvegardées:', {
+      id: updatedMatch.id,
+      type: updatedMatch.type,
+      status: updatedMatch.status,
+      team1Score: updatedMatch.team1?.score,
+      team2Score: updatedMatch.team2?.score
+    });
 
     await saveMatch(updatedMatch);
     
@@ -217,9 +182,7 @@ const MatchLive = () => {
   return (
     <div className="match-live">
       <div className="match-header">
-        <h1 className="match-title">
-          Match {match.type === 'officiel' ? 'Officiel' : 'd\'Entraînement'}
-        </h1>
+        <h1 className="match-title">Match Officiel</h1>
         {!isFinished && (
           <button onClick={handleCancelMatch} className="btn btn-danger">
             Annuler le match
@@ -229,38 +192,20 @@ const MatchLive = () => {
 
       <div className="match-container">
         <div className="teams-display">
-          <div 
-            className={`team-card team-red ${match.team1.score >= 10 ? 'winner' : ''} ${isActive ? 'clickable' : ''}`}
-            onClick={() => isActive && handleGoalClick('team1')}
-            style={isActive ? { cursor: 'pointer' } : {}}
-          >
+          <div className={`team-card team-red ${match.team1.score >= 10 ? 'winner' : ''}`}>
             <div className="team-name">Équipe Rouge</div>
             <div className="team-players">
               {match.team1.players.map(p => p.name).join(' / ')}
             </div>
             <div className="score">{match.team1.score}</div>
-            {isActive && (
-              <div className="team-click-hint" style={{ marginTop: '10px', fontSize: '12px', opacity: 0.7 }}>
-                Cliquer pour marquer
-              </div>
-            )}
           </div>
 
-          <div 
-            className={`team-card team-blue ${match.team2.score >= 10 ? 'winner' : ''} ${isActive ? 'clickable' : ''}`}
-            onClick={() => isActive && handleGoalClick('team2')}
-            style={isActive ? { cursor: 'pointer' } : {}}
-          >
+          <div className={`team-card team-blue ${match.team2.score >= 10 ? 'winner' : ''}`}>
             <div className="team-name">Équipe Bleue</div>
             <div className="team-players">
               {match.team2.players.map(p => p.name).join(' / ')}
             </div>
             <div className="score">{match.team2.score}</div>
-            {isActive && (
-              <div className="team-click-hint" style={{ marginTop: '10px', fontSize: '12px', opacity: 0.7 }}>
-                Cliquer pour marquer
-              </div>
-            )}
           </div>
         </div>
 
@@ -369,9 +314,42 @@ const MatchLive = () => {
               </div>
             )}
 
-            <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '20px', marginBottom: '10px', fontSize: '14px' }}>
-              Cliquez sur une équipe pour marquer un but
-            </p>
+            <div className="score-controls">
+              <div className="score-control-group">
+                <button 
+                  onClick={() => handleScoreChange('team1', 1)} 
+                  className="btn btn-success"
+                  style={{ fontSize: '20px', padding: '15px 30px', minWidth: '120px' }}
+                >
+                  +1
+                </button>
+                <button 
+                  onClick={() => handleScoreChange('team1', -1)} 
+                  className="btn btn-danger"
+                  style={{ fontSize: '20px', padding: '15px 30px', minWidth: '120px' }}
+                  disabled={match.team1.score <= 0}
+                >
+                  -1
+                </button>
+              </div>
+              <div className="score-control-group">
+                <button 
+                  onClick={() => handleScoreChange('team2', 1)} 
+                  className="btn btn-success"
+                  style={{ fontSize: '20px', padding: '15px 30px', minWidth: '120px' }}
+                >
+                  +1
+                </button>
+                <button 
+                  onClick={() => handleScoreChange('team2', -1)} 
+                  className="btn btn-danger"
+                  style={{ fontSize: '20px', padding: '15px 30px', minWidth: '120px' }}
+                  disabled={match.team2.score <= 0}
+                >
+                  -1
+                </button>
+              </div>
+            </div>
           </>
         )}
 
@@ -389,47 +367,7 @@ const MatchLive = () => {
           </div>
         )}
 
-        {match.goals && match.goals.length > 0 && (
-          <div className="goals-history">
-            <h3>Historique des buts</h3>
-            <ul className="goals-list">
-              {match.goals.slice().reverse().map(goal => {
-                const team = match[goal.team];
-                const player = team.players.find(p => p.id === goal.playerId);
-                const goalType = GOAL_TYPES[goal.type];
-                const isGamelle = goal.type === 'gamelle';
-                const opponentTeam = goal.team === 'team1' ? 'team2' : 'team1';
-                
-                return (
-                  <li key={goal.id} className={`goal-item ${goal.team === 'team1' ? 'goal-red' : 'goal-blue'}`}>
-                    <span className="goal-time">
-                      {new Date(goal.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                    <span className="goal-player">{player?.name || 'Inconnu'}</span>
-                    <span className="goal-type">
-                      {goalType?.label || goal.type}
-                      {isGamelle && ` (${match[opponentTeam].players.map(p => p.name).join(' / ')})`}
-                    </span>
-                    <span className={`goal-points ${goal.points > 0 ? 'positive' : 'negative'}`}>
-                      {goal.points > 0 ? '+' : ''}{goal.points}
-                      {isGamelle && ' (adverse)'}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
       </div>
-
-      {showGoalModal && (
-        <GoalModal
-          team={match[selectedTeam]}
-          goalTypes={GOAL_TYPES}
-          onClose={() => setShowGoalModal(false)}
-          onSubmit={handleGoalSubmit}
-        />
-      )}
 
 
       {showCookieResult && match && (

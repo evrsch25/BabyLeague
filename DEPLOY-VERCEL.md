@@ -1,198 +1,122 @@
-# Guide de déploiement sur Vercel
+# 🚀 Guide de déploiement sur Vercel
 
-## 📋 Prérequis
+## Prérequis
 
-1. Un compte GitHub (gratuit)
-2. Un compte Vercel (gratuit) - [vercel.com](https://vercel.com)
-3. Votre projet doit être sur GitHub
+1. ✅ Un compte GitHub avec votre code poussé
+2. ✅ Un compte Vercel (gratuit sur [vercel.com](https://vercel.com))
+3. ✅ Votre projet Supabase actif avec les variables d'environnement
 
-## 🗄️ Étape 1 : Configurer Supabase
+## Étapes de déploiement
 
-⚠️ **IMPORTANT** : Suivez d'abord le guide `SETUP-SUPABASE.md` pour configurer Supabase avant de déployer sur Vercel.
+### 1. Pousser votre code sur GitHub
 
-Une fois Supabase configuré, vous aurez votre `DATABASE_URL` à utiliser dans Vercel.
+Si vous n'avez pas encore poussé votre code :
 
-## 📝 Étape 3 : Préparer le projet
-
-### 3.1 Créer un fichier `.vercelignore`
-
-Créez `babyleague/.vercelignore` :
-
-```
-node_modules
-.env
-.env.local
-*.log
-.DS_Store
-server/prisma/dev.db
-server/prisma/dev.db-journal
-```
-
-### 3.2 Mettre à jour `vercel.json`
-
-Le fichier existe déjà, mais vérifiez qu'il contient :
-
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build",
-        "installCommand": "npm install && cd server && npm install"
-      }
-    },
-    {
-      "src": "server/server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "server/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ]
-}
-```
-
-### 3.3 Ajouter un script de build dans `package.json`
-
-Ajoutez dans `babyleague/package.json` :
-
-```json
-{
-  "scripts": {
-    "build": "react-scripts build && cd server && npm run prisma:generate"
-  }
-}
-```
-
-### 3.4 Mettre à jour `server/package.json`
-
-Ajoutez un script pour les migrations en production :
-
-```json
-{
-  "scripts": {
-    "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma migrate deploy"
-  }
-}
-```
-
-## 🚀 Étape 4 : Déployer sur Vercel
-
-### Méthode 1 : Via l'interface web Vercel (Recommandé)
-
-1. **Poussez votre code sur GitHub**
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin https://github.com/VOTRE_USERNAME/babyleague.git
-   git push -u origin main
-   ```
-
-2. **Connectez Vercel à GitHub**
-   - Allez sur [vercel.com](https://vercel.com)
-   - Cliquez sur "Add New Project"
-   - Importez votre repository GitHub
-   - Sélectionnez le repository `babyleague`
-
-3. **Configurez le projet**
-   - **Framework Preset** : Create React App
-   - **Root Directory** : `./babyleague` (ou laissez vide si le repo est directement dans babyleague)
-   - **Build Command** : `npm run build`
-   - **Output Directory** : `build`
-
-4. **Ajoutez les variables d'environnement**
-   - Cliquez sur "Environment Variables"
-   - Ajoutez :
-     - `DATABASE_URL` : Votre URL PostgreSQL (de Vercel Postgres ou autre)
-     - `REACT_APP_API_URL` : Laissez vide (sera automatiquement `/api` en production)
-     - `PORT` : `3001` (optionnel, Vercel gère le port automatiquement)
-
-5. **Déployez**
-   - Cliquez sur "Deploy"
-   - Attendez la fin du build
-
-### Méthode 2 : Via Vercel CLI
-
-1. **Installez Vercel CLI**
-   ```bash
-   npm install -g vercel
-   ```
-
-2. **Connectez-vous**
-   ```bash
-   vercel login
-   ```
-
-3. **Déployez**
-   ```bash
-   cd babyleague
-   vercel
-   ```
-
-4. **Ajoutez les variables d'environnement**
-   ```bash
-   vercel env add DATABASE_URL
-   vercel env add REACT_APP_API_URL
-   ```
-
-5. **Déployez en production**
-   ```bash
-   vercel --prod
-   ```
-
-## 🔄 Étape 5 : Exécuter les migrations
-
-Après le déploiement, vous devez exécuter les migrations Prisma :
-
-### Option A : Via Vercel CLI
 ```bash
-vercel env pull .env.local
-cd server
-npx prisma migrate deploy
+git add .
+git commit -m "Prêt pour déploiement Vercel"
+git push origin main
 ```
 
-### Option B : Via un script de build
-Les migrations seront exécutées automatiquement si vous avez ajouté `vercel-build` dans `server/package.json`
+### 2. Se connecter à Vercel
 
-## ✅ Étape 6 : Vérifier le déploiement
+1. Allez sur [vercel.com](https://vercel.com)
+2. Cliquez sur **"Sign Up"** ou **"Log In"**
+3. Connectez-vous avec votre compte **GitHub**
 
-1. Votre application sera disponible à : `https://votre-projet.vercel.app`
-2. Testez l'API : `https://votre-projet.vercel.app/api/players`
-3. Vérifiez que la base de données fonctionne
+### 3. Importer votre projet
 
-## 🐛 Résolution de problèmes
+1. Cliquez sur **"Add New..."** → **"Project"**
+2. Sélectionnez votre repository `babyleague`
+3. Vercel détectera automatiquement la configuration (React + Node.js)
 
-### Erreur : "Prisma Client not generated"
-- Ajoutez `prisma generate` dans le script `postinstall` de `server/package.json`
+### 4. Configurer les variables d'environnement
 
-### Erreur : "Database connection failed"
-- Vérifiez que `DATABASE_URL` est correctement configurée
-- Vérifiez que votre base de données PostgreSQL est accessible depuis Internet
+⚠️ **IMPORTANT** : Avant de déployer, configurez les variables d'environnement :
 
-### Erreur : "Module not found"
-- Vérifiez que tous les `node_modules` sont installés
-- Ajoutez `installCommand` dans `vercel.json`
+Dans la section **"Environment Variables"**, ajoutez :
 
-### L'API ne fonctionne pas
-- Vérifiez que `REACT_APP_API_URL` est vide ou définie sur `/api`
-- Vérifiez les routes dans `vercel.json`
+| Nom | Valeur | Environnement |
+|-----|--------|---------------|
+| `SUPABASE_URL` | `https://dnbrxbemlttdmcergdty.supabase.co` | Production, Preview, Development |
+| `SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (votre clé complète) | Production, Preview, Development |
+| `NODE_ENV` | `production` | Production |
+| `VERCEL` | `1` | Production, Preview |
 
-## 📚 Ressources
+💡 **Note** : Assurez-vous que votre projet Supabase est actif (pas en pause) avant de déployer.
 
-- [Documentation Vercel](https://vercel.com/docs)
-- [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
-- [Prisma avec Vercel](https://www.prisma.io/docs/guides/deployment/deployment-guides/deploying-to-vercel)
+### 5. Configurer le build
+
+Vercel devrait détecter automatiquement la configuration grâce à `vercel.json`, mais vérifiez :
+
+- **Framework Preset** : Other (ou détection automatique)
+- **Build Command** : `npm run build`
+- **Output Directory** : `build`
+- **Install Command** : `npm install`
+
+### 6. Déployer
+
+1. Cliquez sur **"Deploy"**
+2. Attendez la fin du déploiement (environ 2-3 minutes)
+3. Vous obtiendrez une URL du type : `https://votre-projet.vercel.app`
+
+### 7. Vérifier le déploiement
+
+1. Visitez l'URL fournie par Vercel
+2. Testez la connexion/inscription
+3. Vérifiez que les matchs fonctionnent
+4. Testez sur votre téléphone en visitant la même URL
+
+## 📱 Utilisation sur mobile
+
+Une fois déployé, votre application sera accessible depuis n'importe quel appareil :
+
+1. Ouvrez votre navigateur mobile (Chrome, Safari, etc.)
+2. Visitez l'URL Vercel (ex: `https://votre-projet.vercel.app`)
+3. L'application est responsive et optimisée pour mobile
+
+### Option : Installer comme PWA (Progressive Web App)
+
+L'application peut être installée sur l'écran d'accueil de votre téléphone :
+
+1. Sur Android : Menu → "Ajouter à l'écran d'accueil"
+2. Sur iOS : Partager → "Sur l'écran d'accueil"
+
+## 🔄 Mises à jour futures
+
+À chaque push sur GitHub, Vercel déploiera automatiquement une nouvelle version :
+
+```bash
+git add .
+git commit -m "Nouvelle fonctionnalité"
+git push origin main
+```
+
+Vercel créera automatiquement un nouveau déploiement.
+
+## ⚠️ Dépannage
+
+### L'application ne se charge pas
+- Vérifiez que votre projet Supabase est actif
+- Vérifiez les variables d'environnement dans Vercel
+- Consultez les logs de déploiement dans Vercel
+
+### Erreur 500 sur l'API
+- Vérifiez que les variables `SUPABASE_URL` et `SUPABASE_ANON_KEY` sont correctement configurées
+- Vérifiez les logs de fonction serverless dans Vercel
+
+### Le backend ne répond pas
+- Vérifiez que `server/server.js` est bien exporté pour Vercel (déjà configuré ✅)
+- Vérifiez que `vercel.json` route correctement vers `/api`
+
+## 📊 Monitoring
+
+- **Dashboard Vercel** : Consultez les logs, métriques et performances
+- **Analytics** : Activable dans les paramètres du projet
+- **Logs en temps réel** : Disponibles dans l'onglet "Functions" du dashboard
+
+## 🔒 Sécurité
+
+Les variables d'environnement sont sécurisées et ne sont pas exposées côté client. 
+Seules les variables préfixées par `REACT_APP_` sont accessibles côté frontend.
 

@@ -15,9 +15,9 @@ export const sendDiscordNotification = async (match) => {
   const winnerNames = winner.players.map(p => p.name).join(' et ');
   
   const message = {
-    content: `🏁 **Match terminé** : Équipe rouge (${match.team1.score}) vs Équipe bleue (${match.team2.score})\n\nVictoire de **${winnerNames}** 🔥\nType : ${match.type === 'officiel' ? 'Officiel' : 'Entraînement'}`,
-    embeds: [{
-      color: match.type === 'officiel' ? 0x27ae60 : 0x3498db,
+    content: `🏁 **Match terminé** : Équipe rouge (${match.team1.score}) vs Équipe bleue (${match.team2.score})\n\nVictoire de **${winnerNames}** 🔥`,
+      embeds: [{
+        color: 0x27ae60,
       fields: [
         {
           name: 'Équipe Rouge',

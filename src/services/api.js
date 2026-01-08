@@ -1,7 +1,7 @@
 // Service API pour communiquer avec le backend Prisma
 
 // En production, utilise l'URL relative, en développement utilise localhost
-const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:3001/api');
+const API_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:3002/api');
 
 // Fonction utilitaire pour les appels API
 const fetchAPI = async (endpoint, options = {}) => {
@@ -21,14 +21,10 @@ const fetchAPI = async (endpoint, options = {}) => {
 
     return await response.json();
   } catch (error) {
-    // Si c'est une erreur de connexion, on retourne un tableau vide ou null
-    // pour ne pas planter l'application
+    // Si c'est une erreur de connexion, on propage l'erreur pour que l'app puisse l'afficher
     if (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION_REFUSED')) {
-      console.warn('Serveur API non disponible. Assurez-vous que le serveur backend est démarré sur le port 3001.');
-      // Retourner des valeurs par défaut selon le type de requête
-      if (endpoint.includes('/matches')) return [];
-      if (endpoint.includes('/players')) return [];
-      return null;
+      console.error('Serveur API non disponible. Assurez-vous que le serveur backend est démarré sur le port 3001.');
+      throw new Error('Le serveur backend n\'est pas disponible. Veuillez démarrer le serveur sur le port 3001.');
     }
     console.error('Erreur API:', error);
     throw error;
@@ -88,7 +84,7 @@ export const setCurrentUser = (user) => {
 };
 
 // Statistiques
-export const calculatePlayerStats = async (playerId, matchType = 'all') => {
+export const calculatePlayerStats = async (playerId, matchType = 'officiel') => {
   return await fetchAPI(`/players/${playerId}/stats?matchType=${matchType}`);
 };
 
@@ -101,7 +97,7 @@ export const generateBalancedTeams = async () => {
   const playersWithStats = await Promise.all(
     players.map(async p => ({
       ...p,
-      stats: await calculatePlayerStats(p.id, 'all')
+      stats: await calculatePlayerStats(p.id, 'officiel')
     }))
   );
 

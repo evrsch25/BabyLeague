@@ -16,7 +16,7 @@ const Navigation = ({ currentUser, onLogout }) => {
     <nav className="nav">
       <div className="nav-content">
         <Link to="/" className="nav-logo">
-          <span className="logo-icon">🏓</span>
+          <span className="logo-icon">⚽</span>
           <span className="logo-text">BabyLeague</span>
         </Link>
         
@@ -35,13 +35,8 @@ const Navigation = ({ currentUser, onLogout }) => {
             </Link>
           </li>
           <li>
-            <Link to="/history" className={isActive('/history')}>
-              📜 Historique
-            </Link>
-          </li>
-          <li>
             <Link to="/ranking" className={isActive('/ranking')}>
-              🏆 Classement
+              🏆 Compétition
             </Link>
           </li>
           <li>
@@ -52,13 +47,6 @@ const Navigation = ({ currentUser, onLogout }) => {
         </ul>
 
         <div className="nav-actions">
-          <button 
-            onClick={toggleTheme} 
-            className="theme-toggle"
-            aria-label="Toggle theme"
-          >
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
           <button onClick={onLogout} className="btn-logout">
             Déconnexion
           </button>
@@ -69,11 +57,8 @@ const Navigation = ({ currentUser, onLogout }) => {
         <Link to="/" className={isActive('/')} onClick={() => setMobileMenuOpen(false)}>
           🏠 Accueil
         </Link>
-        <Link to="/history" className={isActive('/history')} onClick={() => setMobileMenuOpen(false)}>
-          📜 Historique
-        </Link>
         <Link to="/ranking" className={isActive('/ranking')} onClick={() => setMobileMenuOpen(false)}>
-          🏆 Classement
+          🏆 Compétition
         </Link>
         <Link to={`/profile/${currentUser?.id}`} className={isActive(`/profile/${currentUser?.id}`)} onClick={() => setMobileMenuOpen(false)}>
           👤 Profil

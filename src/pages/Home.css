@@ -2,11 +2,7 @@
   font-size: 36px;
   font-weight: 800;
   margin-bottom: 24px;
-  color: var(--text-primary);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--secondary);
 }
 
 .match-preview {
@@ -46,10 +42,7 @@
 .preview-score {
   font-size: 56px;
   font-weight: 900;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--secondary);
 }
 
 .preview-vs {
@@ -89,10 +82,7 @@
 .top-rank {
   font-size: 24px;
   font-weight: bold;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--secondary);
   margin-right: 16px;
   min-width: 40px;
 }
@@ -139,10 +129,7 @@
 .recent-score {
   font-size: 28px;
   font-weight: 900;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--secondary);
   margin-bottom: 8px;
 }
 
@@ -307,10 +294,10 @@
 }
 
 .bet-btn.selected {
-  border-color: var(--primary);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  border-color: var(--secondary);
+  background: var(--gradient-secondary);
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(205, 251, 10, 0.3);
 }
 
 @media (max-width: 768px) {

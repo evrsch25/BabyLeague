@@ -59,10 +59,7 @@
   font-size: 36px;
   font-weight: 800;
   margin-bottom: 8px;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--secondary);
 }
 
 .login-subtitle {
@@ -104,8 +101,8 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 4px rgba(205, 251, 10, 0.2);
   background: var(--bg-primary);
 }
 
@@ -147,7 +144,7 @@
 .link-button {
   background: none;
   border: none;
-  color: var(--primary);
+  color: var(--secondary);
   cursor: pointer;
   text-decoration: none;
   font-size: 15px;
@@ -159,21 +156,21 @@
 
 .link-button:hover {
   background: var(--bg-secondary);
-  color: var(--primary-hover);
+  color: #a8d508;
 }
 
 .submit-btn {
   width: 100%;
   padding: 18px;
-  background: var(--gradient-primary);
-  color: white;
+  background: var(--gradient-secondary);
+  color: var(--primary);
   border: none;
   border-radius: 12px;
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(205, 251, 10, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -198,7 +195,7 @@
 
 .submit-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 8px 20px rgba(205, 251, 10, 0.4);
 }
 
 .submit-btn:active {

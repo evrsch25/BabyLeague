@@ -1,14 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
-import { getPlayerById, getMatches, calculatePlayerStats } from '../services/api';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getPlayerById, getMatches, savePlayer, deletePlayer, getCurrentUser, setCurrentUser } from '../services/api';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertModal from '../components/AlertModal';
 import './Profile.css';
 
 const Profile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [player, setPlayer] = useState(null);
-  const [stats, setStats] = useState({ officiel: null, entraînement: null });
   const [recentMatches, setRecentMatches] = useState([]);
   const [partners, setPartners] = useState([]);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showAlert, setShowAlert] = useState({ isOpen: false, title: '', message: '', type: 'info' });
+  
+  const currentUser = getCurrentUser();
 
   const loadProfile = useCallback(async () => {
     try {
@@ -17,14 +26,8 @@ const Profile = () => {
 
       setPlayer(playerData);
 
-      // Charger les statistiques
-      const [statsOfficiel, statsEntrainement, allMatches] = await Promise.all([
-        calculatePlayerStats(id, 'officiel'),
-        calculatePlayerStats(id, 'entraînement'),
-        getMatches()
-      ]);
-      
-      setStats({ officiel: statsOfficiel, entraînement: statsEntrainement });
+      // Charger les matchs
+      const allMatches = await getMatches();
 
       // Charger les matchs récents
       const playerMatches = (allMatches || [])
@@ -92,70 +95,183 @@ const Profile = () => {
     loadProfile();
   }, [loadProfile]);
 
+  useEffect(() => {
+    if (player) {
+      setEditedName(player.name);
+    }
+  }, [player]);
+
+  const handleEditName = () => {
+    setIsEditingName(true);
+    setEditedName(player.name);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingName(false);
+    setEditedName(player.name);
+  };
+
+  const handleSaveName = async () => {
+    if (!editedName.trim()) {
+      setShowAlert({
+        isOpen: true,
+        title: 'Erreur',
+        message: 'Le nom ne peut pas être vide',
+        type: 'error'
+      });
+      return;
+    }
+
+    try {
+      const updatedPlayer = await savePlayer({
+        id: player.id,
+        name: editedName.trim(),
+        email: player.email
+      });
+
+      setPlayer(updatedPlayer);
+      setIsEditingName(false);
+
+      // Mettre à jour l'utilisateur actuel si c'est son propre profil
+      if (isOwnProfile) {
+        setCurrentUser(updatedPlayer);
+      }
+
+      setShowAlert({
+        isOpen: true,
+        title: 'Succès',
+        message: 'Nom mis à jour avec succès !',
+        type: 'success'
+      });
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du nom:', error);
+      setShowAlert({
+        isOpen: true,
+        title: 'Erreur',
+        message: 'Erreur lors de la mise à jour du nom: ' + error.message,
+        type: 'error'
+      });
+    }
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    setShowDeleteConfirm(false);
+    setIsDeleting(true);
+
+    try {
+      await deletePlayer(player.id);
+
+      // Si c'est le profil de l'utilisateur actuel, le déconnecter
+      if (isOwnProfile) {
+        setCurrentUser(null);
+        setShowAlert({
+          isOpen: true,
+          title: 'Profil supprimé',
+          message: 'Votre profil a été supprimé. Vous allez être déconnecté.',
+          type: 'success'
+        });
+        // Attendre un peu pour que l'utilisateur voie le message
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
+      } else {
+        setShowAlert({
+          isOpen: true,
+          title: 'Profil supprimé',
+          message: 'Profil supprimé avec succès.',
+          type: 'success'
+        });
+        setTimeout(() => {
+          navigate('/');
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression du profil:', error);
+      setShowAlert({
+        isOpen: true,
+        title: 'Erreur',
+        message: 'Erreur lors de la suppression du profil: ' + error.message,
+        type: 'error'
+      });
+      setIsDeleting(false);
+    }
+  };
+
   if (!player) {
     return <div className="profile">Chargement...</div>;
   }
 
-  // Valeurs par défaut pour les stats si elles ne sont pas encore chargées
-  const officielStats = stats.officiel || { matches: 0, victories: 0, defeats: 0, points: 0, ratio: 0 };
-  const entrainementStats = stats.entraînement || { matches: 0, victories: 0, defeats: 0, points: 0, ratio: 0 };
+  const isOwnProfile = currentUser && currentUser.id === player.id;
 
   return (
     <div className="profile">
       <div className="profile-header">
-        <h1 className="page-title">{player.name}</h1>
-        <div className="profile-email">{player.email}</div>
+        <div className="profile-name-container">
+          {isEditingName ? (
+            <div className="profile-edit-name">
+              <input
+                type="text"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                className="profile-name-input"
+                autoFocus
+              />
+              <div className="profile-edit-actions">
+                <button onClick={handleSaveName} className="btn btn-success btn-small">
+                  ✅ Enregistrer
+                </button>
+                <button onClick={handleCancelEdit} className="btn btn-secondary btn-small">
+                  ❌ Annuler
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <h1 className="page-title">{player.name}</h1>
+              {isOwnProfile && (
+                <button onClick={handleEditName} className="btn-edit-name" title="Modifier le nom">
+                  ✏️ Modifier
+                </button>
+              )}
+            </>
+          )}
+        </div>
+        {player.email && <div className="profile-email">{player.email}</div>}
+        {isOwnProfile && (
+          <div className="profile-actions">
+            <button
+              onClick={handleDeleteClick}
+              disabled={isDeleting}
+              className="btn btn-danger btn-small"
+            >
+              {isDeleting ? '⏳ Suppression...' : '🗑️ Supprimer mon profil'}
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className="profile-stats">
-        <div className="card">
-          <h2 className="card-title">Statistiques Officielles</h2>
-          <div className="stats-grid">
-            <div className="stat-item">
-              <div className="stat-value">{officielStats.matches}</div>
-              <div className="stat-label">Matchs</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value victories">{officielStats.victories}</div>
-              <div className="stat-label">Victoires</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value defeats">{officielStats.defeats}</div>
-              <div className="stat-label">Défaites</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value points">{officielStats.points}</div>
-              <div className="stat-label">Points</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value ratio">{officielStats.ratio}%</div>
-              <div className="stat-label">Ratio</div>
-            </div>
-          </div>
-        </div>
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="⚠️ Supprimer le profil"
+        message={`Êtes-vous sûr de vouloir supprimer le profil de ${player.name} ? Cette action est irréversible et supprimera définitivement votre compte et toutes vos données associées.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        type="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
 
-        <div className="card">
-          <h2 className="card-title">Statistiques Entraînement</h2>
-          <div className="stats-grid">
-            <div className="stat-item">
-              <div className="stat-value">{entrainementStats.matches}</div>
-              <div className="stat-label">Matchs</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value victories">{entrainementStats.victories}</div>
-              <div className="stat-label">Victoires</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value defeats">{entrainementStats.defeats}</div>
-              <div className="stat-label">Défaites</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value ratio">{entrainementStats.ratio}%</div>
-              <div className="stat-label">Ratio</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AlertModal
+        isOpen={showAlert.isOpen}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        onClose={() => setShowAlert({ ...showAlert, isOpen: false })}
+      />
 
       <div className="profile-details">
         {partners.length > 0 && (
@@ -213,7 +329,7 @@ const Profile = () => {
                       </span>
                     </div>
                     <div className="match-type-badge-small">
-                      {match.type === 'officiel' ? '🏆' : '⚽'} {match.type || 'Match'}
+                      🏆 Match Officiel
                     </div>
                   </li>
                 );

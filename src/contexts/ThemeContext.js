@@ -11,27 +11,17 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('babyleague_theme');
-      return savedTheme || 'light';
-    }
-    return 'light';
-  });
+  // Toujours en mode sombre - pas de toggle
+  const theme = 'dark';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('babyleague_theme', theme);
       document.documentElement.setAttribute('data-theme', theme);
     }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
-  };
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme: () => {} }}>
       {children}
     </ThemeContext.Provider>
   );
