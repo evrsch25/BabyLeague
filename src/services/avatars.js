@@ -27,41 +27,57 @@ export const getAvatarUrl = (seed, style = 'avataaars') => {
 };
 
 /**
- * Récupère le style d'avatar d'un joueur depuis localStorage
- * @param {string} playerId - ID du joueur
+ * Récupère le style d'avatar d'un joueur depuis player.avatarStyle ou localStorage
+ * @param {Object|string} playerOrId - Le joueur ou son ID
  * @returns {string} Style d'avatar
  */
-export const getPlayerAvatarStyle = (playerId) => {
+export const getPlayerAvatarStyle = (playerOrId) => {
+  // Si c'est un objet player avec avatarStyle, l'utiliser
+  if (typeof playerOrId === 'object' && playerOrId?.avatarStyle) {
+    return playerOrId.avatarStyle;
+  }
+  
+  // Sinon chercher dans localStorage
+  const playerId = typeof playerOrId === 'string' ? playerOrId : playerOrId?.id;
   const styles = JSON.parse(localStorage.getItem('player_avatar_styles') || '{}');
   return styles[playerId] || 'avataaars'; // Style par défaut
 };
 
 /**
- * Sauvegarde le style d'avatar d'un joueur dans localStorage
+ * Sauvegarde le style d'avatar d'un joueur dans localStorage ET en BDD
  * @param {string} playerId - ID du joueur
  * @param {string} style - Style d'avatar choisi
  */
-export const savePlayerAvatarStyle = (playerId, style) => {
+export const savePlayerAvatarStyle = async (playerId, style) => {
+  // Sauvegarder dans localStorage
   const styles = JSON.parse(localStorage.getItem('player_avatar_styles') || '{}');
   styles[playerId] = style;
   localStorage.setItem('player_avatar_styles', JSON.stringify(styles));
+  
+  // Sauvegarder dans la BDD via l'API
+  const { savePlayer, getPlayerById } = await import('./api');
+  const player = await getPlayerById(playerId);
+  if (player) {
+    await savePlayer({
+      ...player,
+      avatarStyle: style
+    });
+  }
 };
 
 /**
- * Génère l'avatar complet d'un joueur
+ * Génère l'URL de l'avatar d'un joueur (retourne directement l'URL)
  * @param {Object} player - Le joueur
  * @param {string} player.id - ID du joueur
  * @param {string} player.name - Nom du joueur
- * @returns {Object} { url, style }
+ * @param {string} player.avatarStyle - Style d'avatar (optionnel)
+ * @returns {string} URL de l'avatar
  */
 export const getPlayerAvatar = (player) => {
-  if (!player) return { url: '', style: 'avataaars' };
+  if (!player) return getAvatarUrl('anonymous', 'avataaars');
   
-  const style = getPlayerAvatarStyle(player.id);
+  const style = getPlayerAvatarStyle(player);
   const seed = player.name || player.id; // Utiliser le nom comme seed pour cohérence
   
-  return {
-    url: getAvatarUrl(seed, style),
-    style: style
-  };
+  return getAvatarUrl(seed, style);
 };

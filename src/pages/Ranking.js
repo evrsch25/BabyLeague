@@ -211,7 +211,7 @@ const Ranking = () => {
                   <td>
                     <div className="player-cell-content">
                       <img 
-                        src={getPlayerAvatar(player).url} 
+                        src={getPlayerAvatar(player)} 
                         alt={player.name}
                         className="player-avatar-small"
                       />

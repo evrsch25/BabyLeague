@@ -102,9 +102,10 @@ const Profile = () => {
   useEffect(() => {
     if (player) {
       setEditedName(player.name);
-      const avatar = getPlayerAvatar(player);
-      setAvatarData({ url: avatar, style: player.avatarStyle || 'avataaars' });
-      setSelectedAvatarStyle(player.avatarStyle || 'avataaars');
+      const avatarUrl = getPlayerAvatar(player);
+      const avatarStyle = player.avatarStyle || 'avataaars';
+      setAvatarData({ url: avatarUrl, style: avatarStyle });
+      setSelectedAvatarStyle(avatarStyle);
     }
   }, [player]);
 
@@ -163,15 +164,19 @@ const Profile = () => {
 
   const handleSaveAvatar = async (styleId) => {
     try {
+      // Sauvegarder le style
       await savePlayerAvatarStyle(player.id, styleId);
-      const newAvatar = getPlayerAvatar({ ...player, avatarStyle: styleId });
-      setAvatarData(newAvatar);
       
+      // Mettre à jour l'avatar immédiatement dans l'interface
+      const updatedPlayer = { ...player, avatarStyle: styleId };
+      const newAvatarUrl = getPlayerAvatar(updatedPlayer);
+      setAvatarData({ url: newAvatarUrl, style: styleId });
+      setPlayer(updatedPlayer);
+      
+      // Mettre à jour le current user si c'est son profil
       if (currentUser && currentUser.id === player.id) {
         setCurrentUser({ ...currentUser, avatarStyle: styleId });
       }
-      
-      await loadProfile();
     } catch (error) {
       console.error('Erreur lors de la sauvegarde de l\'avatar:', error);
       setShowAlert({
