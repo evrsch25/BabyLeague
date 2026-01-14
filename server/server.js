@@ -36,17 +36,20 @@ const generateId = () => {
 
 // ========== PLAYERS ==========
 
-// Récupérer tous les joueurs
+// Récupérer tous les joueurs (avec filtre optionnel par creatorId)
 app.get('/api/players', async (req, res) => {
   try {
-    console.log('GET /api/players - Requête reçue');
-    console.log('URL Supabase:', supabaseUrl);
-    console.log('Clé Supabase présente:', supabaseKey ? 'Oui' : 'Non');
+    const { creatorId } = req.query;
+    console.log('GET /api/players - Requête reçue', creatorId ? `(filtré par creatorId: ${creatorId})` : '');
     
-    // D'abord, essayer sans order pour éviter les problèmes de colonne
-    let { data, error } = await supabase
-      .from('players')
-      .select('*');
+    // Construire la requête avec ou sans filtre
+    let query = supabase.from('players').select('*');
+    
+    if (creatorId) {
+      query = query.eq('creatorId', creatorId);
+    }
+    
+    let { data, error } = await query;
     
     if (error) {
       console.error('❌ Erreur Supabase GET /api/players:');
@@ -77,10 +80,16 @@ app.get('/api/players', async (req, res) => {
     // Si succès, on peut essayer d'ordonner (mais ce n'est pas critique)
     if (data && data.length > 0) {
       try {
-        const orderedResult = await supabase
+        let orderedQuery = supabase
           .from('players')
           .select('*')
           .order('"createdAt"', { ascending: false });
+        
+        if (creatorId) {
+          orderedQuery = orderedQuery.eq('creatorId', creatorId);
+        }
+        
+        const orderedResult = await orderedQuery;
         if (!orderedResult.error && orderedResult.data) {
           data = orderedResult.data;
         }
@@ -258,10 +267,20 @@ const formatMatch = (match, team1Player1, team1Player2, team2Player1, team2Playe
 // Récupérer tous les matchs
 app.get('/api/matches', async (req, res) => {
   try {
-    const { data: matches, error: matchesError } = await supabase
+    const { creatorId } = req.query;
+    console.log('GET /api/matches - Requête reçue', creatorId ? `(filtré par creatorId: ${creatorId})` : '');
+    
+    // Construire la requête avec ou sans filtre
+    let query = supabase
       .from('matches')
       .select('*')
       .order('"createdAt"', { ascending: false });
+    
+    if (creatorId) {
+      query = query.eq('creatorId', creatorId);
+    }
+    
+    const { data: matches, error: matchesError } = await query;
     
     if (matchesError) throw matchesError;
     
@@ -296,8 +315,10 @@ app.get('/api/matches', async (req, res) => {
       })
     );
     
+    console.log('✅ GET /api/matches - Succès,', formattedMatches?.length || 0, 'matchs trouvés');
     res.json(formattedMatches);
   } catch (error) {
+    console.error('❌ Erreur GET /api/matches:', error);
     res.status(500).json({ error: error.message });
   }
 });

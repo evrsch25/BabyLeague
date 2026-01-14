@@ -32,14 +32,26 @@ const fetchAPI = async (endpoint, options = {}) => {
 };
 
 // Joueurs
-export const getPlayers = async () => {
+export const getPlayers = async (userId = null) => {
+  const currentUser = getCurrentUser();
+  const filterUserId = userId || currentUser?.id;
+  
+  if (filterUserId) {
+    return await fetchAPI(`/players?creatorId=${filterUserId}`);
+  }
   return await fetchAPI('/players');
 };
 
 export const savePlayer = async (player) => {
+  const currentUser = getCurrentUser();
+  const playerWithCreator = {
+    ...player,
+    creatorId: player.creatorId || currentUser?.id || null
+  };
+  
   return await fetchAPI('/players', {
     method: 'POST',
-    body: JSON.stringify(player)
+    body: JSON.stringify(playerWithCreator)
   });
 };
 
@@ -54,14 +66,26 @@ export const deletePlayer = async (id) => {
 };
 
 // Matchs
-export const getMatches = async () => {
+export const getMatches = async (userId = null) => {
+  const currentUser = getCurrentUser();
+  const filterUserId = userId || currentUser?.id;
+  
+  if (filterUserId) {
+    return await fetchAPI(`/matches?creatorId=${filterUserId}`);
+  }
   return await fetchAPI('/matches');
 };
 
 export const saveMatch = async (match) => {
+  const currentUser = getCurrentUser();
+  const matchWithCreator = {
+    ...match,
+    creatorId: match.creatorId || currentUser?.id || null
+  };
+  
   return await fetchAPI('/matches', {
     method: 'POST',
-    body: JSON.stringify(match)
+    body: JSON.stringify(matchWithCreator)
   });
 };
 
