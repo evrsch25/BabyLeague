@@ -102,6 +102,9 @@ const Profile = () => {
   useEffect(() => {
     if (player) {
       setEditedName(player.name);
+      const avatar = getPlayerAvatar(player);
+      setAvatarData({ url: avatar, style: player.avatarStyle || 'avataaars' });
+      setSelectedAvatarStyle(player.avatarStyle || 'avataaars');
     }
   }, [player]);
 
@@ -158,17 +161,24 @@ const Profile = () => {
     }
   };
 
-  const handleSaveAvatar = () => {
-    if (player) {
-      savePlayerAvatarStyle(player.id, selectedAvatarStyle);
-      const newAvatar = getPlayerAvatar({ ...player, id: player.id });
+  const handleSaveAvatar = async (styleId) => {
+    try {
+      await savePlayerAvatarStyle(player.id, styleId);
+      const newAvatar = getPlayerAvatar({ ...player, avatarStyle: styleId });
       setAvatarData(newAvatar);
-      setIsEditingAvatar(false);
+      
+      if (currentUser && currentUser.id === player.id) {
+        setCurrentUser({ ...currentUser, avatarStyle: styleId });
+      }
+      
+      await loadProfile();
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde de l\'avatar:', error);
       setShowAlert({
         isOpen: true,
-        title: 'Succès',
-        message: 'Avatar mis à jour avec succès !',
-        type: 'success'
+        title: 'Erreur',
+        message: 'Impossible de mettre à jour l\'avatar: ' + error.message,
+        type: 'error'
       });
     }
   };
@@ -278,35 +288,56 @@ const Profile = () => {
         </div>
         {player.email && <div className="profile-email">{player.email}</div>}
         
-        {isEditingAvatar && isOwnProfile && (
-          <div className="avatar-selector">
-            <h3>Choisir un style d'avatar :</h3>
+      {isEditingAvatar && isOwnProfile && (
+        <div className="avatar-selector-modal" onClick={() => setIsEditingAvatar(false)}>
+          <div className="avatar-selector" onClick={(e) => e.stopPropagation()}>
+            <div className="avatar-selector-header">
+              <h3>⚽ Choisir ton avatar</h3>
+              <button 
+                className="modal-close-btn"
+                onClick={() => setIsEditingAvatar(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="avatar-preview-large">
+              <img 
+                src={`https://api.dicebear.com/7.x/${selectedAvatarStyle}/svg?seed=${player.name}&backgroundColor=091C3E&radius=50`}
+                alt="Aperçu"
+                className="avatar-current-preview"
+              />
+              <p className="avatar-preview-label">Aperçu de ton avatar</p>
+            </div>
+
             <div className="avatar-styles-grid">
               {AVATAR_STYLES.map((style) => (
                 <div 
                   key={style.id}
-                  className={`avatar-style-option ${selectedAvatarStyle === style.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedAvatarStyle(style.id)}
+                  className={`avatar-style-card ${selectedAvatarStyle === style.id ? 'selected' : ''}`}
+                  onClick={async () => {
+                    setSelectedAvatarStyle(style.id);
+                    await handleSaveAvatar(style.id);
+                    setTimeout(() => setIsEditingAvatar(false), 400);
+                  }}
                 >
                   <img 
                     src={`https://api.dicebear.com/7.x/${style.id}/svg?seed=${player.name}&backgroundColor=091C3E&radius=50`}
                     alt={style.name}
-                    className="avatar-preview"
+                    className="avatar-option-img"
                   />
-                  <div className="avatar-style-name">{style.name}</div>
+                  <div className="avatar-style-info">
+                    <div className="avatar-style-name">{style.name}</div>
+                    {selectedAvatarStyle === style.id && (
+                      <div className="avatar-selected-badge">✓</div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="avatar-edit-actions">
-              <button onClick={handleSaveAvatar} className="btn btn-success">
-                ✅ Enregistrer
-              </button>
-              <button onClick={() => setIsEditingAvatar(false)} className="btn btn-secondary">
-                ❌ Annuler
-              </button>
-            </div>
           </div>
-        )}
+        </div>
+      )}
         {isOwnProfile && (
           <div className="profile-actions">
             <button

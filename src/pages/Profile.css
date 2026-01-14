@@ -2,6 +2,52 @@
   margin-bottom: 24px;
 }
 
+.profile-avatar-section {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 20px;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--secondary);
+  background: var(--bg-secondary);
+  box-shadow: 0 4px 12px var(--shadow);
+  transition: all 0.3s;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+}
+
+.btn-edit-avatar {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--secondary);
+  border: 2px solid var(--bg-primary);
+  color: var(--primary);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-edit-avatar:hover {
+  transform: scale(1.15);
+  background: var(--primary);
+  color: var(--secondary);
+}
+
 .profile-name-container {
   display: flex;
   align-items: center;
@@ -86,6 +132,205 @@
   margin-top: 16px;
   display: flex;
   gap: 12px;
+}
+
+/* Avatar Selector Modal */
+.avatar-selector-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.avatar-selector {
+  background: var(--bg-primary);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 550px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  border: 2px solid var(--secondary);
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.avatar-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.avatar-selector-header h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.modal-close-btn {
+  background: var(--bg-secondary);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 22px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+  background: var(--danger);
+  color: white;
+  transform: rotate(90deg);
+}
+
+.avatar-preview-large {
+  text-align: center;
+  margin-bottom: 28px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  border: 2px dashed var(--secondary);
+}
+
+.avatar-current-preview {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 3px solid var(--secondary);
+  background: var(--bg-primary);
+  box-shadow: 0 4px 20px var(--shadow);
+  margin-bottom: 12px;
+  transition: all 0.3s;
+}
+
+.avatar-current-preview:hover {
+  transform: scale(1.1);
+}
+
+.avatar-preview-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.avatar-styles-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.avatar-style-card {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  background: var(--bg-secondary);
+  transition: all 0.25s ease;
+  text-align: center;
+  position: relative;
+}
+
+.avatar-style-card:hover {
+  border-color: var(--secondary);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 20px var(--shadow);
+  background: var(--bg-tertiary);
+}
+
+.avatar-style-card.selected {
+  border-color: var(--secondary);
+  background: var(--bg-tertiary);
+  box-shadow: 0 0 0 3px rgba(205, 251, 10, 0.3);
+  transform: scale(1.05);
+}
+
+.avatar-option-img {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  margin-bottom: 6px;
+  background: var(--bg-primary);
+  transition: all 0.2s;
+}
+
+.avatar-style-card:hover .avatar-option-img {
+  transform: scale(1.1);
+}
+
+.avatar-style-info {
+  position: relative;
+}
+
+.avatar-style-name {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.avatar-selected-badge {
+  position: absolute;
+  top: -24px;
+  right: 4px;
+  background: var(--secondary);
+  color: var(--primary);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  border: 2px solid var(--bg-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .profile-stats {
@@ -244,7 +489,74 @@
   color: #666;
 }
 
+/* Scrollbar personnalisée pour le modal */
+.avatar-selector::-webkit-scrollbar {
+  width: 8px;
+}
+
+.avatar-selector::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 10px;
+}
+
+.avatar-selector::-webkit-scrollbar-thumb {
+  background: var(--secondary);
+  border-radius: 10px;
+}
+
+.avatar-selector::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
 @media (max-width: 768px) {
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .profile-avatar-section {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .btn-edit-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .avatar-selector {
+    padding: 20px;
+    max-width: 95%;
+  }
+
+  .avatar-selector-header h3 {
+    font-size: 18px;
+  }
+
+  .avatar-current-preview {
+    width: 75px;
+    height: 75px;
+  }
+  
+  .avatar-styles-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .avatar-style-card {
+    padding: 8px;
+  }
+  
+  .avatar-option-img {
+    width: 45px;
+    height: 45px;
+  }
+
+  .avatar-style-name {
+    font-size: 10px;
+  }
+
   .profile-stats {
     grid-template-columns: 1fr;
   }
@@ -258,3 +570,13 @@
   }
 }
 
+@media (max-width: 480px) {
+  .avatar-styles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .avatar-option-img {
+    width: 50px;
+    height: 50px;
+  }
+}
