@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import MatchLive from './pages/MatchLive';
 import Ranking from './pages/Ranking';
 import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 import { getCurrentUser, setCurrentUser } from './services/api';
 
 function App() {
@@ -65,6 +66,10 @@ function App() {
                   <Route 
                     path="/profile/:id" 
                     element={currentUser ? <Profile /> : <Navigate to="/login" />} 
+                  />
+                  <Route 
+                    path="/settings" 
+                    element={currentUser ? <Settings /> : <Navigate to="/login" />} 
                   />
                   <Route path="*" element={<Navigate to="/" />} />
                 </Routes>

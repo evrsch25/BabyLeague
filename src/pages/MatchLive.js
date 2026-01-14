@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getMatchById, saveMatch, getCurrentUser } from '../services/api';
-import { sendDiscordNotification } from '../services/discord';
 import CookieResult from '../components/CookieResult';
 import AlertModal from '../components/AlertModal';
 import ConfirmModal from '../components/ConfirmModal';
@@ -109,9 +108,6 @@ const MatchLive = () => {
       ? finishedMatch.team2 
       : finishedMatch.team1;
     const isCookie = winner.score >= 10 && loser.score <= 0;
-    
-    // Envoyer la notification Discord
-    await sendDiscordNotification(updatedMatch);
 
     // Afficher le résultat du cookie si applicable
     if (isCookie) {

@@ -42,6 +42,11 @@ const Navigation = ({ currentUser, onLogout }) => {
               👤 Profil
             </Link>
           </li>
+          <li>
+            <Link to="/settings" className={isActive('/settings')}>
+              ⚙️ Paramètres
+            </Link>
+          </li>
         </ul>
 
         <div className="nav-actions">
@@ -60,6 +65,9 @@ const Navigation = ({ currentUser, onLogout }) => {
         </Link>
         <Link to={`/profile/${currentUser?.id}`} className={isActive(`/profile/${currentUser?.id}`)} onClick={() => setMobileMenuOpen(false)}>
           👤 Profil
+        </Link>
+        <Link to="/settings" className={isActive('/settings')} onClick={() => setMobileMenuOpen(false)}>
+          ⚙️ Paramètres
         </Link>
         <button onClick={() => { onLogout(); setMobileMenuOpen(false); }} className="btn-logout mobile-logout">
           Déconnexion

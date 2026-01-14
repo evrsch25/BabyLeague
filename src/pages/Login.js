@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getPlayers, savePlayer, setCurrentUser } from '../services/api';
+import { sendWelcomeEmail } from '../services/email';
 import './Login.css';
 
 const Login = ({ onLogin }) => {
@@ -33,6 +34,18 @@ const Login = ({ onLogin }) => {
         };
 
         const createdPlayer = await savePlayer(newPlayer);
+        
+        // 📧 Envoyer un email de bienvenue (API externe EmailJS)
+        try {
+          const emailSent = await sendWelcomeEmail(createdPlayer);
+          if (emailSent) {
+            console.log('Email de bienvenue envoyé à', createdPlayer.email);
+          }
+        } catch (emailError) {
+          // Ne pas bloquer l'inscription si l'email échoue
+          console.warn('Email de bienvenue non envoyé:', emailError);
+        }
+        
         setCurrentUser(createdPlayer);
         onLogin(createdPlayer);
       } else {
