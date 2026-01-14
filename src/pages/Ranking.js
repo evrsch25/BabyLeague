@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { getPlayers, savePlayer, calculatePlayerStats } from '../services/api';
+import { getPlayerAvatar } from '../services/avatars';
 import AlertModal from '../components/AlertModal';
 import './Ranking.css';
 
@@ -208,9 +209,16 @@ const Ranking = () => {
                     <span className="rank-icon">{getRankIcon(index)}</span>
                   </td>
                   <td>
-                    <Link to={`/profile/${player.id}`} className="player-link">
-                      {player.name}
-                    </Link>
+                    <div className="player-cell-content">
+                      <img 
+                        src={getPlayerAvatar(player).url} 
+                        alt={player.name}
+                        className="player-avatar-small"
+                      />
+                      <Link to={`/profile/${player.id}`} className="player-link">
+                        {player.name}
+                      </Link>
+                    </div>
                   </td>
                   <td>{player.stats.matches}</td>
                   <td className="victories">{player.stats.victories}</td>

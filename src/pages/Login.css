@@ -227,47 +227,6 @@
   }
 }
 
-.validation-code-input {
-  text-align: center;
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: 8px;
-  font-family: 'Courier New', monospace;
-}
-
-.validation-help {
-  margin-top: 20px;
-  text-align: center;
-  padding: 16px;
-  background: var(--bg-secondary);
-  border-radius: 8px;
-}
-
-.validation-help p {
-  margin: 0 0 12px 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-.validation-help strong {
-  color: var(--text-primary);
-}
-
-.btn-link {
-  background: none;
-  border: none;
-  color: var(--secondary);
-  cursor: pointer;
-  font-size: 14px;
-  text-decoration: underline;
-  padding: 4px 8px;
-  transition: opacity 0.2s;
-}
-
-.btn-link:hover {
-  opacity: 0.8;
-}
-
 @media (max-width: 480px) {
   .login-container {
     padding: 12px;
@@ -279,10 +238,5 @@
 
   .login-title {
     font-size: 24px;
-  }
-  
-  .validation-code-input {
-    font-size: 20px;
-    letter-spacing: 4px;
   }
 }

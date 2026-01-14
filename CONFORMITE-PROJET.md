@@ -157,50 +157,49 @@ Table: matches
 
 ## 🆕 6. Appel API externe
 
-**IMPLÉMENTÉ** - Intégration EmailJS API
+**IMPLÉMENTÉ** - Intégration DiceBear Avatars API
 
-### API EmailJS
-**Fichier :** `src/services/email.js`
+### API DiceBear Avatars
+**Fichier :** `src/services/avatars.js`
 
-**Type :** API REST externe tierce (EmailJS)
-**Endpoint :** `https://api.emailjs.com/api/v1.0/email/send`
-**Méthode :** POST (via SDK JavaScript)
-**Format :** JSON
+**Type :** API REST externe tierce (DiceBear)
+**Endpoint :** `https://api.dicebear.com/7.x/`
+**Méthode :** GET
+**Format :** SVG
 
 **Fonctionnalités :**
-1. **Email de bienvenue** : Envoi automatique lors de l'inscription
-2. **Test de connexion** : Envoi d'un email de test
-3. **Configuration** : Interface utilisateur pour configurer EmailJS
+1. **Avatar automatique** : Généré dès l'inscription basé sur le nom
+2. **Personnalisation** : 8 styles différents au choix
+3. **Affichage** : Profil (150px) + Classement (40px)
 
 **Fichiers impliqués :**
-- `src/services/email.js` - Service d'appel API externe
-- `src/pages/Settings.js` - Page de configuration
-- `src/pages/Login.js` - Déclenchement automatique à l'inscription
+- `src/services/avatars.js` - Service d'appel API externe
+- `src/pages/Profile.js` - Affichage et modification de l'avatar
+- `src/pages/Ranking.js` - Affichage dans le classement
 
 **Utilisation :**
 ```javascript
-// Appel API externe vers EmailJS
-const response = await window.emailjs.send(
-  serviceId,      // Service configuré sur EmailJS
-  templateId,     // Template d'email créé
-  templateParams  // Données du joueur
-);
+// Appel API externe vers DiceBear
+export const getAvatarUrl = (seed, style = 'avataaars') => {
+  return `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(seed)}&backgroundColor=091C3E&radius=50`;
+};
 ```
 
-**Configuration :**
-1. Créer un compte gratuit sur **EmailJS.com**
-2. Configurer un service email (Gmail, Outlook, etc.)
-3. Créer un template d'email avec variables
-4. Dans l'app : **Paramètres** → Remplir les 3 clés (Service ID, Template ID, Public Key)
-5. Tester l'envoi avec le bouton de test
-6. Les emails sont envoyés automatiquement à chaque inscription !
+**Styles disponibles :**
+- Cartoon (avataaars)
+- Robot (bottts)
+- Aventurier (adventurer)
+- Grand sourire (big-smile)
+- Pixel Art (lorelei)
+- Personas
+- Pouce (thumbs)
+- Emoji Fun (fun-emoji)
 
-**Variables de template disponibles :**
-- `{{to_name}}` - Nom du destinataire
-- `{{player_name}}` - Nom du joueur
-- `{{app_name}}` - BabyLeague
-- `{{app_url}}` - URL de l'application
-- `{{created_date}}` - Date d'inscription
+**Utilisation dans l'app :**
+1. À l'inscription → Avatar généré automatiquement
+2. Page Profil → Voir son avatar + bouton ✏️ pour modifier
+3. Sélecteur de style → 8 styles au choix
+4. Classement → Avatar affiché à côté du nom
 
 ---
 
@@ -213,7 +212,7 @@ const response = await window.emailjs.send(
 | ✅ BDD structurée | CONFORME | Supabase PostgreSQL avec relations |
 | ✅ Interface responsive | CONFORME | Mobile et Desktop optimisés |
 | ✅ 1+ Automatisation | CONFORME | 2 automatisations actives |
-| ✅ Appel API externe | CONFORME | **EmailJS API** pour envoi d'emails |
+| ✅ Appel API externe | CONFORME | **DiceBear Avatars API** |
 
 ---
 
@@ -223,68 +222,55 @@ const response = await window.emailjs.send(
 2. **Sécurité** : Validation des données, protection des routes
 3. **UX moderne** : Thème sombre, modales personnalisées, animations, responsive
 4. **Automatisations avancées** : Génération d'équipes, calcul de stats
-5. **API externe** : Intégration EmailJS pour emails automatiques
+5. **API externe** : Intégration DiceBear pour avatars personnalisés
 6. **Responsive design** : Optimisé mobile et desktop
 7. **Code propre** : Structure modulaire, services séparés
 
 ---
 
-## 🚀 Comment tester l'API externe (EmailJS)
+## 🚀 Comment tester l'API externe (DiceBear Avatars)
 
-### Étape 1 : Configuration EmailJS (5 minutes)
+### Test dans le navigateur (10 secondes)
 
-1. Créez un compte gratuit sur **https://www.emailjs.com/**
-2. Ajoutez un service email (Gmail recommandé)
-3. Créez un template d'email avec les variables :
-   - Sujet : `Bienvenue sur BabyLeague, {{player_name}} !`
-   - Corps : Message de bienvenue avec `{{to_name}}`, `{{app_name}}`, etc.
-4. Notez les 3 clés : Service ID, Template ID, Public Key
+1. Ouvrez : `https://api.dicebear.com/7.x/avataaars/svg?seed=VotreNom&backgroundColor=091C3E&radius=50`
+2. Changez `VotreNom` par différents noms
+3. ✅ L'avatar change à chaque nom !
 
-### Étape 2 : Configuration dans l'app (1 minute)
+### Test dans l'application (2 minutes)
 
-1. Lancez l'application
-2. Connectez-vous
-3. Allez dans **⚙️ Paramètres**
-4. Section "📧 Notifications Email"
-5. Remplissez les 3 champs
-6. Cliquez sur "💾 Enregistrer"
-
-### Étape 3 : Test manuel (30 secondes)
-
-1. Entrez votre email dans le champ de test
-2. Cliquez sur "🧪 Envoyer un email de test"
-3. ✅ Vérifiez votre boîte de réception !
-
-### Étape 4 : Test automatique (inscription)
-
-1. Déconnectez-vous
-2. Créez un nouveau compte avec un vrai email
-3. ✅ Email de bienvenue reçu automatiquement !
+1. **Lancez l'application** et connectez-vous
+2. **Allez sur votre Profil**
+3. ✅ Vous voyez votre avatar automatiquement généré
+4. **Cliquez sur ✏️** (bouton édition sur l'avatar)
+5. **Sélectionnez** un autre style (Robot, Pixel Art, etc.)
+6. **Cliquez Enregistrer**
+7. ✅ Avatar mis à jour !
+8. **Allez dans Classement**
+9. ✅ Votre nouvel avatar apparaît à côté de votre nom !
 
 ---
 
 ## 🔄 Flux de l'appel API externe
 
 ```
-Utilisateur remplit le formulaire d'inscription
+Utilisateur s'inscrit → Nom: "Alice"
     ↓
-handleSubmit() dans Login.js
+getPlayerAvatar({ name: 'Alice' })
     ↓
-savePlayer() → Création dans Supabase
+🌐 APPEL API EXTERNE
+https://api.dicebear.com/7.x/avataaars/svg?seed=Alice
     ↓
-sendWelcomeEmail() dans email.js
+Avatar SVG généré !
     ↓
-🌐 APPEL API EXTERNE : window.emailjs.send()
+Affiché dans Profil (150px) + Classement (40px)
     ↓
-EmailJS traite la requête
+Utilisateur peut modifier le style (8 choix)
     ↓
-EmailJS envoie via Gmail/Outlook
-    ↓
-📧 Joueur reçoit l'email de bienvenue !
+Avatar mis à jour partout dans l'app !
 ```
 
 ---
 
-**Conclusion :** Le projet BabyLeague répond à **toutes les exigences** et les dépasse avec l'intégration d'une API externe (EmailJS) pour l'envoi automatique d'emails de bienvenue, en plus de 2 automatisations avancées.
+**Conclusion :** Le projet BabyLeague répond à **toutes les exigences** et les dépasse avec l'intégration d'une API externe (DiceBear Avatars) qui améliore réellement l'expérience utilisateur avec des avatars personnalisés, en plus de 2 automatisations avancées.
 
 Le projet est **prêt pour la production** et **conforme à 100%** ! 🎉

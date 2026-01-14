@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getPlayerById, getMatches, savePlayer, deletePlayer, getCurrentUser, setCurrentUser } from '../services/api';
+import { getPlayerAvatar, AVATAR_STYLES, savePlayerAvatarStyle } from '../services/avatars';
 import ConfirmModal from '../components/ConfirmModal';
 import AlertModal from '../components/AlertModal';
 import './Profile.css';
@@ -16,6 +17,9 @@ const Profile = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showAlert, setShowAlert] = useState({ isOpen: false, title: '', message: '', type: 'info' });
+  const [isEditingAvatar, setIsEditingAvatar] = useState(false);
+  const [selectedAvatarStyle, setSelectedAvatarStyle] = useState('avataaars');
+  const [avatarData, setAvatarData] = useState({ url: '', style: 'avataaars' });
   
   const currentUser = getCurrentUser();
 
@@ -154,6 +158,21 @@ const Profile = () => {
     }
   };
 
+  const handleSaveAvatar = () => {
+    if (player) {
+      savePlayerAvatarStyle(player.id, selectedAvatarStyle);
+      const newAvatar = getPlayerAvatar({ ...player, id: player.id });
+      setAvatarData(newAvatar);
+      setIsEditingAvatar(false);
+      setShowAlert({
+        isOpen: true,
+        title: 'Succès',
+        message: 'Avatar mis à jour avec succès !',
+        type: 'success'
+      });
+    }
+  };
+
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true);
   };
@@ -210,6 +229,23 @@ const Profile = () => {
   return (
     <div className="profile">
       <div className="profile-header">
+        <div className="profile-avatar-section">
+          <img 
+            src={avatarData.url} 
+            alt={`Avatar de ${player.name}`} 
+            className="profile-avatar"
+          />
+          {isOwnProfile && !isEditingAvatar && (
+            <button 
+              onClick={() => setIsEditingAvatar(true)} 
+              className="btn-edit-avatar"
+              title="Modifier l'avatar"
+            >
+              ✏️
+            </button>
+          )}
+        </div>
+
         <div className="profile-name-container">
           {isEditingName ? (
             <div className="profile-edit-name">
@@ -241,6 +277,36 @@ const Profile = () => {
           )}
         </div>
         {player.email && <div className="profile-email">{player.email}</div>}
+        
+        {isEditingAvatar && isOwnProfile && (
+          <div className="avatar-selector">
+            <h3>Choisir un style d'avatar :</h3>
+            <div className="avatar-styles-grid">
+              {AVATAR_STYLES.map((style) => (
+                <div 
+                  key={style.id}
+                  className={`avatar-style-option ${selectedAvatarStyle === style.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedAvatarStyle(style.id)}
+                >
+                  <img 
+                    src={`https://api.dicebear.com/7.x/${style.id}/svg?seed=${player.name}&backgroundColor=091C3E&radius=50`}
+                    alt={style.name}
+                    className="avatar-preview"
+                  />
+                  <div className="avatar-style-name">{style.name}</div>
+                </div>
+              ))}
+            </div>
+            <div className="avatar-edit-actions">
+              <button onClick={handleSaveAvatar} className="btn btn-success">
+                ✅ Enregistrer
+              </button>
+              <button onClick={() => setIsEditingAvatar(false)} className="btn btn-secondary">
+                ❌ Annuler
+              </button>
+            </div>
+          </div>
+        )}
         {isOwnProfile && (
           <div className="profile-actions">
             <button
