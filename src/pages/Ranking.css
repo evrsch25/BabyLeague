@@ -46,6 +46,14 @@
   gap: 10px;
 }
 
+/* Avatar (table classement) - taille réduite */
+.player-avatar-small {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
 .ranking-table th {
   text-align: left;
 }
@@ -226,9 +234,7 @@
   }
 
   .player-avatar-small {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
   }
 }

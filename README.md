@@ -437,6 +437,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 - Modification du nom utilisateur
 - Sélection d'avatar parmi 8 styles (DiceBear API)
 - Suppression de compte avec confirmation
+- Suppression robuste : suppression des matchs/goals liés au joueur (évite les contraintes FK)
 - Isolation des données par utilisateur (creatorId)
 
 ### 2. Gestion des Joueurs (CRUD Complet)
@@ -458,6 +459,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 - Tri par points décroissants
 - Badges pour le Top 3 (🥇🥈🥉)
 - Avatars personnalisés (DiceBear)
+- Export du classement en **CSV**
 - Mise à jour en temps réel
 
 ### 3. Gestion des Matchs (CRUD Complet)
@@ -471,6 +473,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 - Formation automatique d'équipes équilibrées (4 joueurs)
 - Attribution automatique d'un arbitre (5ème joueur si disponible)
+- Pari sélectionnable avant le début du match (usage mono-écran / mono-compétition)
 - États : `en attente`, `en cours`, `terminé`
 - Score en temps réel avec boutons +1/-1
 - Fin automatique à 10 points
@@ -532,13 +535,22 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 3. Mise à jour du classement en temps réel
 ```
 
+**Automatisation 3 : Export automatique des matchs (Make.com → Google Sheets)**
+
+```
+1. Le match se termine (status = "terminé")
+2. Le frontend envoie un payload JSON au Webhook Make.com
+3. Make.com ajoute une ligne dans un Google Sheet ("Add a Row")
+4. Garde-fou anti-doublon côté client (1 export max par match)
+```
+
 ### 7. Interface Responsive
 
 **Design adaptatif complet** :
 
 - **Desktop (> 768px)** : Navigation horizontale, grilles 2-4 colonnes
 - **Tablet (768px - 480px)** : Navigation compacte, grilles 2-3 colonnes
-- **Mobile (< 480px)** : Navigation mobile-first, popup pour les contrôles de score
+- **Mobile (< 480px)** : Navigation mobile-first, popup pour les contrôles de score + classement en "cartes" (table responsive)
 
 ### 8. Design et UX
 
