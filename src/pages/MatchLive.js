@@ -277,7 +277,7 @@ const MatchLive = () => {
         {isPending && (
           <div className="match-pending">
             <h2 className="pending-title">⏳ Match en attente</h2>
-            <p className="pending-text">Le match va commencer. L'arbitre peut placer son pari avant le début.</p>
+            <p className="pending-text">Le match va commencer. Le pari peut être placé avant le début.</p>
 
             {/* Pari accessible dans tous les cas (usage mono-profil / mono-écran) */}
             {match.type === 'officiel' && (

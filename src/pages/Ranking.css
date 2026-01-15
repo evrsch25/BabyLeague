@@ -30,6 +30,22 @@
   width: 100%;
 }
 
+.ranking-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ranking-actions {
+  margin-top: 8px;
+}
+
+.player-cell-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .ranking-table th {
   text-align: left;
 }
@@ -161,3 +177,58 @@
   }
 }
 
+/* Mobile: table lisible en "cartes" */
+@media (max-width: 600px) {
+  .ranking-table thead {
+    display: none;
+  }
+
+  .ranking-table,
+  .ranking-table tbody,
+  .ranking-table tr,
+  .ranking-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .ranking-table tr {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    background: var(--bg-primary);
+  }
+
+  .top-player {
+    background-color: var(--bg-secondary);
+  }
+
+  .ranking-table td {
+    padding: 8px 0;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .ranking-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--text-secondary);
+  }
+
+  .rank-cell {
+    font-size: 18px;
+  }
+
+  .ranking-table td[data-label="Joueur"] {
+    align-items: center;
+  }
+
+  .player-avatar-small {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+  }
+}

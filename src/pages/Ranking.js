@@ -144,6 +144,38 @@ const Ranking = () => {
     return `${index + 1}.`;
   };
 
+  const exportRankingCsv = () => {
+    const headers = ['Rang', 'Joueur', 'Matchs', 'Victoires', 'Défaites', 'Points', 'Ratio'];
+    const rows = players.map((p, idx) => ([
+      String(idx + 1),
+      p.name || '',
+      String(p.stats?.matches ?? 0),
+      String(p.stats?.victories ?? 0),
+      String(p.stats?.defeats ?? 0),
+      String(p.stats?.points ?? 0),
+      `${String(p.stats?.ratio ?? 0)}%`,
+    ]));
+
+    const escapeCsv = (value) => {
+      const s = String(value ?? '');
+      if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    };
+
+    const csv = [headers, ...rows].map((r) => r.map(escapeCsv).join(';')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    const date = new Date().toISOString().slice(0, 10);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `babyleague-classement-${date}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="ranking">
       <h1 className="page-title">Compétition</h1>
@@ -183,53 +215,66 @@ const Ranking = () => {
             {isLoading ? '🔄 Chargement...' : '🔄 Actualiser'}
           </button>
         </div>
-        <table className="table ranking-table">
-          <thead>
-            <tr>
-              <th>Rang</th>
-              <th>Joueur</th>
-              <th>Matchs</th>
-              <th>Victoires</th>
-              <th>Défaites</th>
-              <th>Points</th>
-              <th>Ratio</th>
-            </tr>
-          </thead>
-          <tbody>
-            {players.length === 0 ? (
+        <div className="ranking-table-wrapper">
+          <table className="table ranking-table">
+            <thead>
               <tr>
-                <td colSpan={7} className="text-center">
-                  Aucun joueur enregistré
-                </td>
+                <th>Rang</th>
+                <th>Joueur</th>
+                <th>Matchs</th>
+                <th>Victoires</th>
+                <th>Défaites</th>
+                <th>Points</th>
+                <th>Ratio</th>
               </tr>
-            ) : (
-              players.map((player, index) => (
-                <tr key={player.id} className={index < 3 ? 'top-player' : ''}>
-                  <td className="rank-cell">
-                    <span className="rank-icon">{getRankIcon(index)}</span>
+            </thead>
+            <tbody>
+              {players.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center">
+                    Aucun joueur enregistré
                   </td>
-                  <td>
-                    <div className="player-cell-content">
-                      <img 
-                        src={getPlayerAvatar(player)} 
-                        alt={player.name}
-                        className="player-avatar-small"
-                      />
-                      <Link to={`/profile/${player.id}`} className="player-link">
-                        {player.name}
-                      </Link>
-                    </div>
-                  </td>
-                  <td>{player.stats.matches}</td>
-                  <td className="victories">{player.stats.victories}</td>
-                  <td className="defeats">{player.stats.defeats}</td>
-                  <td className="points">{player.stats.points}</td>
-                  <td className="ratio">{player.stats.ratio}%</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                players.map((player, index) => (
+                  <tr key={player.id} className={index < 3 ? 'top-player' : ''}>
+                    <td className="rank-cell" data-label="Rang">
+                      <span className="rank-icon">{getRankIcon(index)}</span>
+                    </td>
+                    <td data-label="Joueur">
+                      <div className="player-cell-content">
+                        <img 
+                          src={getPlayerAvatar(player)} 
+                          alt={player.name}
+                          className="player-avatar-small"
+                        />
+                        <Link to={`/profile/${player.id}`} className="player-link">
+                          {player.name}
+                        </Link>
+                      </div>
+                    </td>
+                    <td data-label="Matchs">{player.stats.matches}</td>
+                    <td className="victories" data-label="Victoires">{player.stats.victories}</td>
+                    <td className="defeats" data-label="Défaites">{player.stats.defeats}</td>
+                    <td className="points" data-label="Points">{player.stats.points}</td>
+                    <td className="ratio" data-label="Ratio">{player.stats.ratio}%</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="ranking-actions">
+          <button
+            onClick={exportRankingCsv}
+            className="btn btn-secondary"
+            disabled={players.length === 0}
+            style={{ width: '100%', marginTop: '16px' }}
+          >
+            ⬇️ Exporter le classement (CSV)
+          </button>
+        </div>
       </div>
 
       <div className="card ranking-info">

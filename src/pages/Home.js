@@ -47,7 +47,7 @@ const Home = () => {
       setShowAlert({
         isOpen: true,
         title: 'Joueurs insuffisants',
-        message: 'Il faut au moins 4 joueurs pour créer un match',
+        message: 'Il faut au moins 4 joueurs pour jouer le prochain match',
         type: 'warning'
       });
       return;
@@ -115,19 +115,19 @@ const Home = () => {
         </div>
       ) : (
         <div className="card">
-          <h2 className="card-title">Créer un nouveau match officiel</h2>
+          <h2 className="card-title">Jouer le prochain match</h2>
           <p style={{ marginBottom: '20px', color: 'var(--text-secondary)' }}>
             Les équipes seront formées automatiquement de manière équilibrée à partir des 4 joueurs avec le moins de matchs.
           </p>
           <p style={{ marginBottom: '20px', color: 'var(--text-secondary)', fontSize: '14px', fontStyle: 'italic' }}>
-            ⚖️ Si un 5e joueur est disponible, il sera automatiquement assigné comme arbitre et pourra parier sur une équipe pendant le match.
+            ⚖️ Si un 5e joueur est disponible, il sera automatiquement assigné comme arbitre.
           </p>
           <button 
             onClick={handleCreateMatch} 
             className="btn btn-primary btn-large"
             style={{ width: '100%' }}
           >
-            🏁 Créer un match
+            ▶️ Jouer le prochain match
           </button>
         </div>
       )}
