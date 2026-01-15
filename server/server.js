@@ -29,6 +29,50 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 app.use(cors());
 app.use(express.json());
 
+// ========== HEALTH / DEBUG ==========
+// Endpoint de diagnostic (utile en prod Vercel)
+// Permet de distinguer :
+// - projet Supabase en pause
+// - mauvaise URL/clé Supabase
+// - tables manquantes (schema non exécuté)
+// - RLS/permissions
+app.get('/api/health', async (req, res) => {
+  const publicUrl = (() => {
+    try {
+      return new URL(supabaseUrl).host;
+    } catch {
+      return 'INVALID_SUPABASE_URL';
+    }
+  })();
+
+  const base = {
+    ok: true,
+    supabaseProject: publicUrl,
+    checks: {},
+  };
+
+  try {
+    const result = await supabase.from('players').select('id').limit(1);
+    if (result.error) {
+      base.ok = false;
+      base.checks.players = {
+        ok: false,
+        code: result.error.code,
+        message: result.error.message,
+        hint: result.error.hint,
+      };
+      return res.status(500).json(base);
+    }
+
+    base.checks.players = { ok: true };
+    return res.json(base);
+  } catch (e) {
+    base.ok = false;
+    base.error = e?.message || String(e);
+    return res.status(500).json(base);
+  }
+});
+
 // Fonction utilitaire pour générer un ID (comme cuid de Prisma)
 const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);

@@ -5,9 +5,9 @@
 1. **Créez le fichier `babyleague/server/.env`** avec le contenu suivant :
 
 ```env
-SUPABASE_URL=https://dnbrxbemlttdmcergdty.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuYnJ4YmVtbHR0ZG1jZXJnZHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NTY4NjMsImV4cCI6MjA4MDQzMjg2M30.uKvn6LOF37hpHprptaMzKtINGCIDBnTHPAmDo4JfGDY
-PORT=3001
+SUPABASE_URL=https://votre-projet.supabase.co
+SUPABASE_ANON_KEY=votre-cle-anon-publique
+PORT=3002
 ```
 
 ## 🔍 Vérifier vos valeurs Supabase

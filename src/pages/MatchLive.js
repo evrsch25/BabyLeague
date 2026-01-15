@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getMatchById, saveMatch, getCurrentUser } from '../services/api';
+import { exportMatchToMake, hasMatchBeenExported, markMatchExported } from '../services/make';
 import CookieResult from '../components/CookieResult';
 import AlertModal from '../components/AlertModal';
 import ConfirmModal from '../components/ConfirmModal';
@@ -98,7 +99,18 @@ const MatchLive = () => {
       team2Score: updatedMatch.team2?.score
     });
 
-    await saveMatch(updatedMatch);
+    const saved = await saveMatch(updatedMatch);
+
+    // Automatisation Make.com → Google Sheets (export 1 seule fois par match)
+    // - Non bloquant pour l'UX : on ne stoppe pas la navigation si Make échoue
+    try {
+      if (saved?.id && !hasMatchBeenExported(saved.id)) {
+        await exportMatchToMake(saved);
+        markMatchExported(saved.id);
+      }
+    } catch (e) {
+      console.warn('Export Make (Google Sheets) échoué:', e);
+    }
     
     // Vérifier si c'est un cookie (10-0 ou moins)
     const winner = finishedMatch.team1.score > finishedMatch.team2.score 
