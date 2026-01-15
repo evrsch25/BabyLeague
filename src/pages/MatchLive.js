@@ -144,17 +144,6 @@ const MatchLive = () => {
 
   const handlePlaceBet = async () => {
     if (!match || !currentUser) return;
-    
-    // Vérifier que l'utilisateur est l'arbitre
-    if (match.referee && match.referee.id !== currentUser.id) {
-      setShowAlert({
-        isOpen: true,
-        title: 'Accès refusé',
-        message: 'Seul l\'arbitre peut parier',
-        type: 'error'
-      });
-      return;
-    }
 
     const updatedMatch = {
       ...match,
@@ -289,76 +278,59 @@ const MatchLive = () => {
           <div className="match-pending">
             <h2 className="pending-title">⏳ Match en attente</h2>
             <p className="pending-text">Le match va commencer. L'arbitre peut placer son pari avant le début.</p>
-            
-            {match.type === 'officiel' && match.referee ? (
+
+            {/* Pari accessible dans tous les cas (usage mono-profil / mono-écran) */}
+            {match.type === 'officiel' && (
               <div className="referee-section">
                 <div className="referee-info">
-                  <span className="referee-label">⚖️ Arbitre:</span>
-                  <span className="referee-name">{match.referee.name}</span>
+                  <span className="referee-label">🎲 Pari:</span>
+                  <span className="referee-name">
+                    {match.bet ? (match.bet === 'team1' ? '🔴 Équipe Rouge' : '🔵 Équipe Bleue') : 'Aucun'}
+                  </span>
                 </div>
-                
-                {currentUser ? (
-                  <>
-                    <div className="referee-bet-selection" style={{ marginTop: '20px', width: '100%' }}>
-                      <label htmlFor="referee-bet-select" className="bet-select-label" style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
-                        Choisir le pari de l'arbitre :
-                      </label>
-                      <select
-                        id="referee-bet-select"
-                        value={(pendingBet !== null ? pendingBet : match.bet) || ''}
-                        onChange={(e) => {
-                          console.log('Select changed to:', e.target.value);
-                          setPendingBet(e.target.value || null);
-                        }}
-                        className="bet-select"
-                        style={{ 
-                          display: 'block',
-                          width: '100%',
-                          maxWidth: '300px',
-                          margin: '0 auto',
-                          padding: '12px 20px',
-                          paddingRight: '45px',
-                          border: '2px solid var(--border-color)',
-                          borderRadius: '10px',
-                          backgroundColor: 'var(--bg-primary)',
-                          color: 'var(--text-primary)',
-                          fontSize: '16px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          minHeight: '48px'
-                        }}
-                      >
-                        <option value="">Pas de pari</option>
-                        <option value="team1">🔴 Équipe Rouge</option>
-                        <option value="team2">🔵 Équipe Bleue</option>
-                      </select>
-                    </div>
-                    <button
-                      onClick={handlePlaceBet}
-                      className="btn btn-primary"
-                      style={{ marginTop: '12px', width: '100%' }}
-                      disabled={pendingBet === (match.bet || null)}
-                    >
-                      ✓ Valider le pari
-                    </button>
-                  </>
-                ) : (
-                  <div style={{ marginTop: '20px', padding: '10px', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px' }}>
-                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px' }}>
-                      Vous devez être connecté pour parier
-                    </p>
-                    {match.bet && (
-                      <p style={{ margin: '5px 0 0 0', color: 'var(--text-secondary)', fontSize: '12px' }}>
-                        Pari actuel: {match.bet === 'team1' ? '🔴 Équipe Rouge' : '🔵 Équipe Bleue'}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                {!match.referee && match.type === 'officiel' && 'Aucun arbitre assigné'}
-                {match.type !== 'officiel' && 'Ce match n\'est pas officiel'}
+
+                <div className="referee-bet-selection" style={{ marginTop: '20px', width: '100%' }}>
+                  <label htmlFor="referee-bet-select" className="bet-select-label" style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    Choisir le pari :
+                  </label>
+                  <select
+                    id="referee-bet-select"
+                    value={(pendingBet !== null ? pendingBet : match.bet) || ''}
+                    onChange={(e) => {
+                      console.log('Select changed to:', e.target.value);
+                      setPendingBet(e.target.value || null);
+                    }}
+                    className="bet-select"
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      maxWidth: '300px',
+                      margin: '0 auto',
+                      padding: '12px 20px',
+                      paddingRight: '45px',
+                      border: '2px solid var(--border-color)',
+                      borderRadius: '10px',
+                      backgroundColor: 'var(--bg-primary)',
+                      color: 'var(--text-primary)',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      minHeight: '48px'
+                    }}
+                  >
+                    <option value="">Pas de pari</option>
+                    <option value="team1">🔴 Équipe Rouge</option>
+                    <option value="team2">🔵 Équipe Bleue</option>
+                  </select>
+                </div>
+                <button
+                  onClick={handlePlaceBet}
+                  className="btn btn-primary"
+                  style={{ marginTop: '12px', width: '100%' }}
+                  disabled={pendingBet === (match.bet || null)}
+                >
+                  ✓ Valider le pari
+                </button>
               </div>
             )}
 
