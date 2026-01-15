@@ -52,7 +52,8 @@ app.get('/api/health', async (req, res) => {
   };
 
   try {
-    const result = await supabase.from('players').select('id').limit(1);
+    // Vérifier l'existence de la table + colonnes attendues par l'app
+    const result = await supabase.from('players').select('id, creatorId, avatarStyle').limit(1);
     if (result.error) {
       base.ok = false;
       base.checks.players = {
@@ -110,10 +111,18 @@ app.get('/api/players', async (req, res) => {
         });
       }
       
-      // Vérifier si c'est un problème de table
-      if (error.message && (error.message.includes('does not exist') || error.message.includes('relation') || error.code === '42P01')) {
-        return res.status(500).json({ 
-          error: 'La table players n\'existe pas dans Supabase. Veuillez exécuter le schéma SQL dans Supabase.',
+      // Problème de table manquante
+      if (error.code === '42P01') {
+        return res.status(500).json({
+          error: 'La table players n\'existe pas dans Supabase. Veuillez exécuter `server/supabase-schema.sql`.',
+          details: error.message
+        });
+      }
+
+      // Problème de colonne manquante (ex: creatorId, avatarStyle...)
+      if (error.code === '42703') {
+        return res.status(500).json({
+          error: 'Le schéma Supabase n\'est pas à jour (colonne manquante). Veuillez exécuter `server/migration-add-creatorId.sql`.',
           details: error.message
         });
       }
@@ -179,7 +188,7 @@ app.get('/api/players/:id', async (req, res) => {
 app.post('/api/players', async (req, res) => {
   try {
     console.log('Requête POST /api/players reçue:', req.body);
-    const { id, name, email } = req.body;
+    const { id, name, email, creatorId, avatarStyle } = req.body;
     
     // Validation
     if (!name || !name.trim()) {
@@ -195,9 +204,23 @@ app.post('/api/players', async (req, res) => {
     if (id) {
       // Mise à jour
       console.log('Mise à jour du joueur:', id);
+
+      // Récupérer l'existant pour préserver certains champs si non fournis
+      const { data: existingPlayer, error: existingError } = await supabase
+        .from('players')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (existingError) throw existingError;
+
       const { data, error } = await supabase
         .from('players')
-        .update({ name: name.trim(), email: email.trim().toLowerCase() })
+        .update({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          creatorId: creatorId !== undefined ? creatorId : existingPlayer.creatorId,
+          avatarStyle: avatarStyle !== undefined ? avatarStyle : existingPlayer.avatarStyle,
+        })
         .eq('id', id)
         .select()
         .single();
@@ -215,14 +238,16 @@ app.post('/api/players', async (req, res) => {
       // Création
       const newId = generateId();
       console.log('Création d\'un nouveau joueur avec ID:', newId);
-      console.log('Données:', { id: newId, name: name.trim(), email: email.trim().toLowerCase() });
+      console.log('Données:', { id: newId, name: name.trim(), email: email.trim().toLowerCase(), creatorId: creatorId || null, avatarStyle: avatarStyle || 'avataaars' });
       
       const { data, error } = await supabase
         .from('players')
         .insert({ 
           id: newId, 
           name: name.trim(), 
-          email: email.trim().toLowerCase() 
+          email: email.trim().toLowerCase(),
+          creatorId: creatorId || null,
+          avatarStyle: avatarStyle || 'avataaars',
         })
         .select()
         .single();
@@ -326,7 +351,21 @@ app.get('/api/matches', async (req, res) => {
     
     const { data: matches, error: matchesError } = await query;
     
-    if (matchesError) throw matchesError;
+    if (matchesError) {
+      if (matchesError.code === '42P01') {
+        return res.status(500).json({
+          error: 'La table matches n\'existe pas dans Supabase. Veuillez exécuter `server/supabase-schema.sql`.',
+          details: matchesError.message
+        });
+      }
+      if (matchesError.code === '42703') {
+        return res.status(500).json({
+          error: 'Le schéma Supabase n\'est pas à jour (colonne manquante). Veuillez exécuter `server/migration-add-creatorId.sql`.',
+          details: matchesError.message
+        });
+      }
+      throw matchesError;
+    }
     
     // Récupérer les joueurs et buts pour chaque match
     const formattedMatches = await Promise.all(
