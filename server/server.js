@@ -290,13 +290,61 @@ app.post('/api/players', async (req, res) => {
 // Supprimer un joueur
 app.delete('/api/players/:id', async (req, res) => {
   try {
-    const { error } = await supabase
+    const playerId = req.params.id;
+
+    // 1) Supprimer les buts éventuels liés à ce joueur (sécurité)
+    const { error: goalsError } = await supabase
+      .from('goals')
+      .delete()
+      .eq('playerId', playerId);
+    if (goalsError) throw goalsError;
+
+    // 2) Supprimer les matchs où ce joueur est impliqué (FK sur matches -> players)
+    // NB: on supprime par groupes car Supabase JS ne gère pas un OR complexe facilement ici.
+    const matchIdSet = new Set();
+
+    const matchQueries = await Promise.all([
+      supabase.from('matches').select('id').eq('team1Player1Id', playerId),
+      supabase.from('matches').select('id').eq('team1Player2Id', playerId),
+      supabase.from('matches').select('id').eq('team2Player1Id', playerId),
+      supabase.from('matches').select('id').eq('team2Player2Id', playerId),
+      supabase.from('matches').select('id').eq('refereeId', playerId),
+    ]);
+
+    for (const q of matchQueries) {
+      if (q.error) throw q.error;
+      (q.data || []).forEach((m) => matchIdSet.add(m.id));
+    }
+
+    const matchIds = Array.from(matchIdSet);
+
+    if (matchIds.length > 0) {
+      // Supprimer d'abord les goals de ces matchs (même si ON DELETE CASCADE existe, on sécurise)
+      const { error: goalsByMatchError } = await supabase
+        .from('goals')
+        .delete()
+        .in('matchId', matchIds);
+      if (goalsByMatchError) throw goalsByMatchError;
+
+      const { error: matchesError } = await supabase
+        .from('matches')
+        .delete()
+        .in('id', matchIds);
+      if (matchesError) throw matchesError;
+    }
+
+    // 3) Supprimer le joueur
+    const { error: playerError } = await supabase
       .from('players')
       .delete()
-      .eq('id', req.params.id);
-    
-    if (error) throw error;
-    res.json({ message: 'Joueur supprimé' });
+      .eq('id', playerId);
+
+    if (playerError) throw playerError;
+
+    res.json({
+      message: 'Joueur supprimé',
+      deletedMatches: matchIds.length,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
